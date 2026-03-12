@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v1.5";
+  --version:   "v1.6";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -776,6 +776,208 @@ td.amt.one { color: var(--oneoff); }
 .btn-install:hover { background: var(--gold); border-color: var(--gold); }
 .btn-dismiss  { font-family: var(--font); font-size: 12px; background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px 6px; flex-shrink: 0; }
 .btn-dismiss:hover { color: var(--text); }
+
+/* ── HELP BUTTON & OVERLAY ───────────────────────────────── */
+.help-fab {
+  position: fixed;
+  bottom: 28px; right: 20px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 14px rgba(0,0,0,.22);
+  z-index: 80;
+  transition: all .15s;
+  line-height: 1;
+}
+.help-fab:hover { background: var(--gold); transform: scale(1.08); }
+.help-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  display: none;
+  flex-direction: column;
+  background: var(--bg);
+}
+.help-overlay.open { display: flex; }
+.help-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--text);
+  color: var(--bg);
+  flex-shrink: 0;
+}
+.help-topbar-brand {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 500;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.help-topbar-tag {
+  font-family: var(--font);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+}
+.help-close {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.7);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+  font-family: var(--font);
+}
+.help-close:hover { background: rgba(255,255,255,.2); color: #fff; }
+.help-chapstrip {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  height: 40px;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.help-chapstrip::-webkit-scrollbar { display: none; }
+.help-tab {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 14px;
+  height: 100%;
+  font-family: var(--font);
+  font-size: 10px;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all .1s;
+  background: none;
+  border-top: none; border-left: none; border-right: none;
+}
+.help-tab:hover { color: var(--text); background: var(--bg3); }
+.help-tab.active { color: var(--gold); border-bottom-color: var(--gold); background: var(--gold-bg); }
+.help-tab-num { font-size: 8px; color: var(--text4); }
+.help-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 24px 60px;
+  scroll-behavior: smooth;
+}
+/* Help content styles */
+.hc-section { padding: 32px 0 28px; border-bottom: 1px solid var(--border); max-width: 680px; }
+.hc-section:last-child { border-bottom: none; }
+.hc-num { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.hc-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.hc-sub { font-size: 11px; color: var(--text3); margin-bottom: 16px; font-style: italic; }
+.hc-rule { height: 1px; background: linear-gradient(to right, var(--gold), transparent); margin-bottom: 16px; }
+.hc-p { font-size: 13px; color: var(--text2); line-height: 1.75; margin-bottom: 12px; }
+.hc-p:last-child { margin-bottom: 0; }
+.hc-p strong { color: var(--text); }
+.hc-tip {
+  display: flex; gap: 10px;
+  background: var(--gold-bg); border: 1px solid var(--gold);
+  border-radius: var(--r); padding: 10px 14px;
+  margin: 12px 0; font-size: 12px; color: var(--text2); line-height: 1.6;
+}
+.hc-warn {
+  display: flex; gap: 10px;
+  background: var(--expense-bg); border: 1px solid var(--expense);
+  border-radius: var(--r); padding: 10px 14px;
+  margin: 12px 0; font-size: 12px; color: var(--text2); line-height: 1.6;
+}
+.hc-note {
+  display: flex; gap: 10px;
+  background: var(--savings-bg); border: 1px solid var(--savings);
+  border-radius: var(--r); padding: 10px 14px;
+  margin: 12px 0; font-size: 12px; color: var(--text2); line-height: 1.6;
+}
+.hc-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.hc-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px 14px;
+  border-top: 2px solid;
+}
+.hc-card.gold  { border-top-color: var(--gold); }
+.hc-card.green { border-top-color: var(--income); }
+.hc-card.blue  { border-top-color: var(--savings); }
+.hc-card.red   { border-top-color: var(--expense); }
+.hc-card.ink   { border-top-color: var(--text); }
+.hc-card-icon  { font-size: 1.1rem; margin-bottom: 5px; }
+.hc-card-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; font-family: var(--serif); }
+.hc-card-body  { font-size: 11px; color: var(--text2); line-height: 1.55; }
+.hc-steps { display: flex; flex-direction: column; gap: 0; margin: 14px 0; }
+.hc-step { display: flex; gap: 12px; padding-bottom: 16px; }
+.hc-step:last-child { padding-bottom: 0; }
+.hc-step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.hc-step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--text); color: var(--bg);
+  font-family: var(--font); font-size: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.hc-step-line { flex: 1; width: 1px; background: var(--border); margin-top: 3px; }
+.hc-step:last-child .hc-step-line { display: none; }
+.hc-step-body { padding-top: 3px; }
+.hc-step-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.hc-step-desc  { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.hc-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px; margin: 14px 0;
+  background: var(--bg2); border-radius: var(--r);
+  overflow: hidden; border: 1px solid var(--border);
+}
+.hc-table th {
+  font-family: var(--font); font-size: 7px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text3);
+  background: var(--bg3); padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.hc-table td {
+  padding: 8px 12px; border-bottom: 1px solid var(--bg3);
+  color: var(--text2); vertical-align: top;
+}
+.hc-table tr:last-child td { border-bottom: none; }
+.hc-table td:first-child { font-family: var(--font); font-size: 11px; color: var(--text); width: 130px; }
+.hc-score-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); margin-bottom: 4px;
+}
+.hc-score-grade { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; width: 28px; flex-shrink: 0; }
+.hc-score-track { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.hc-score-fill  { height: 100%; border-radius: 2px; }
+.hc-score-range { font-family: var(--font); font-size: 9px; color: var(--text3); width: 60px; flex-shrink: 0; }
+.hc-score-desc  { font-size: 11px; color: var(--text2); flex: 1; }
+.hc-faq { margin: 14px 0; }
+.hc-faq-item { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-bottom: 5px; background: var(--bg2); }
+.hc-faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--text);
+  user-select: none; gap: 8px;
+}
+.hc-faq-q:hover { background: var(--bg3); }
+.hc-faq-arrow { font-size: 10px; color: var(--text3); transition: transform .2s; flex-shrink: 0; }
+.hc-faq-item.open .hc-faq-arrow { transform: rotate(180deg); }
+.hc-faq-a { max-height: 0; overflow: hidden; transition: max-height .3s ease; font-size: 12px; color: var(--text2); line-height: 1.65; }
+.hc-faq-a-inner { padding: 0 14px 12px; border-top: 1px solid var(--bg3); padding-top: 8px; }
+.hc-faq-item.open .hc-faq-a { max-height: 300px; }
+@media (max-width: 600px) {
+  .hc-cards { grid-template-columns: 1fr; }
+  .help-body { padding: 20px 16px 60px; }
+}
+
 </style>
 </head>
 <body>
@@ -785,7 +987,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v1.5</span>
+    <span class="logo-ver">v1.6</span>
   </div>
 
   <div class="topbar-actions">
@@ -1051,7 +1253,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v1.5</div>
+</div></div><div class="version-mark">Vestry v1.6</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1186,7 +1388,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v1.5';
+var APP_VERSION = 'v1.6';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -2317,8 +2519,279 @@ if ('serviceWorker' in navigator) {
     console.log('[Vestry] Installed as PWA');
   });
 })();
+
+// ── HELP OVERLAY ─────────────────────────────────────────
+function openHelp() {
+  document.getElementById('help-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeHelp() {
+  document.getElementById('help-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function helpTabClick(tab, sectionId) {
+  // Update active tab
+  document.querySelectorAll('.help-tab').forEach(function(t){ t.classList.remove('active'); });
+  tab.classList.add('active');
+  // Scroll tab into view in strip
+  tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  // Scroll body to section
+  var sec = document.getElementById(sectionId);
+  if (sec) {
+    document.getElementById('help-body').scrollTo({ top: sec.offsetTop - 12, behavior: 'smooth' });
+  }
+}
+
+// Scroll spy for help body
+(function() {
+  var helpBody = null;
+  var sections = [];
+  window.addEventListener('load', function() {
+    helpBody = document.getElementById('help-body');
+    sections = Array.from(document.querySelectorAll('.hc-section[id]'));
+    if (helpBody) {
+      helpBody.addEventListener('scroll', function() {
+        var scrollY = helpBody.scrollTop + 60;
+        var active = null;
+        sections.forEach(function(sec) {
+          if (sec.offsetTop <= scrollY) active = sec.id;
+        });
+        if (active) {
+          document.querySelectorAll('.help-tab').forEach(function(t){ t.classList.remove('active'); });
+          var mapping = {
+            'hs-start':'hs-start','hs-config':'hs-config','hs-txn':'hs-txn',
+            'hs-dash':'hs-dash','hs-score':'hs-score','hs-goals':'hs-goals',
+            'hs-rec':'hs-rec','hs-share':'hs-share','hs-backup':'hs-backup',
+            'hs-csv':'hs-csv','hs-faq':'hs-faq'
+          };
+          var tab = document.querySelector('.help-tab[onclick*="' + active + '"]');
+          if (tab) {
+            tab.classList.add('active');
+            tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }
+      }, { passive: true });
+    }
+  });
+})();
+
+// Close help on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeHelp();
+});
+
 </script>
 
+
+
+<!-- ══ HELP OVERLAY ══════════════════════════════════════════ -->
+<div class="help-overlay" id="help-overlay">
+
+  <!-- Topbar -->
+  <div class="help-topbar">
+    <div class="help-topbar-brand">
+      Vestry <span class="help-topbar-tag">User Guide</span>
+    </div>
+    <button class="help-close" onclick="closeHelp()">✕</button>
+  </div>
+
+  <!-- Chapter strip -->
+  <div class="help-chapstrip" id="help-chapstrip">
+    <button class="help-tab active" onclick="helpTabClick(this,'hs-start')"><span class="help-tab-num">01</span>Getting Started</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-config')"><span class="help-tab-num">02</span>Config</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-txn')"><span class="help-tab-num">03</span>Transactions</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-dash')"><span class="help-tab-num">04</span>Dashboard</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-score')"><span class="help-tab-num">05</span>Health Score</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-goals')"><span class="help-tab-num">06</span>Goals</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-rec')"><span class="help-tab-num">07</span>Recurring Bills</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-share')"><span class="help-tab-num">08</span>Sharing</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-backup')"><span class="help-tab-num">09</span>Backup</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-csv')"><span class="help-tab-num">10</span>CSV</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-faq')"><span class="help-tab-num">FAQ</span>FAQ</button>
+  </div>
+
+  <!-- Scrollable body -->
+  <div class="help-body" id="help-body">
+
+    <!-- 01 GETTING STARTED -->
+    <div class="hc-section" id="hs-start">
+      <div class="hc-num">01</div>
+      <div class="hc-title">Getting Started</div>
+      <div class="hc-sub">What happens when you open Vestry for the first time</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">The first time you open Vestry, a <strong>setup wizard</strong> walks you through 5 quick steps to personalise your dashboard. It only appears once — if you've already configured Vestry, it won't show again.</p>
+      <div class="hc-steps">
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">1</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Welcome</div><div class="hc-step-desc">Vestry introduces itself. Your data lives only on your device — nothing is sent anywhere.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">2</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Household setup</div><div class="hc-step-desc">Enter your family name, your name, and a short owner tag used on share exports.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">3</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Monthly targets</div><div class="hc-step-desc">Set your income target, expense limit, and savings target. These unlock progress bars on dashboard cards.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">4</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">First intention</div><div class="hc-step-desc">Add something you're working toward — this shows on your dashboard every time you open the app.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">5</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Ready</div><div class="hc-step-desc">Your personalised dashboard is waiting. Add your first transaction using + Add.</div></div></div>
+      </div>
+      <div class="hc-tip"><span>💡</span><span><strong>Takes about 2 minutes.</strong> You can update everything later in the Config page — nothing is locked in.</span></div>
+    </div>
+
+    <!-- 02 CONFIG -->
+    <div class="hc-section" id="hs-config">
+      <div class="hc-num">02</div>
+      <div class="hc-title">Configuration</div>
+      <div class="hc-sub">Personalise Vestry to fit your household</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">The <strong>Config page</strong> is your control panel. Access it from the sidebar or hamburger menu. Changes take effect immediately.</p>
+      <div class="hc-cards">
+        <div class="hc-card gold"><div class="hc-card-icon">🏠</div><div class="hc-card-title">Family & Person</div><div class="hc-card-body">Your household name, personal name, and owner tag. The tag auto-stamps transactions and share exports.</div></div>
+        <div class="hc-card blue"><div class="hc-card-icon">🎯</div><div class="hc-card-title">Monthly Targets</div><div class="hc-card-body">Income target, expense limit, savings target. Once set, your dashboard cards show progress bars.</div></div>
+        <div class="hc-card green"><div class="hc-card-icon">💡</div><div class="hc-card-title">Budget Intentions</div><div class="hc-card-body">What you're working toward. The first intention shows in your motivational banner every session.</div></div>
+        <div class="hc-card ink"><div class="hc-card-icon">🎨</div><div class="hc-card-title">Motivational Style</div><div class="hc-card-body"><strong>Gentle</strong> — warm tone. <strong>Coach</strong> — direct. <strong>Data</strong> — numbers only. Affects banner and health score messages.</div></div>
+      </div>
+    </div>
+
+    <!-- 03 TRANSACTIONS -->
+    <div class="hc-section" id="hs-txn">
+      <div class="hc-num">03</div>
+      <div class="hc-title">Transactions</div>
+      <div class="hc-sub">Logging income, expenses, and savings</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">A transaction is any money movement. Every transaction has a <strong>date, description, category, type, and amount</strong>. An optional owner tag records who logged it.</p>
+      <table class="hc-table">
+        <thead><tr><th>Type</th><th>When to use</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--income)">● Income</td><td>Salary, freelance, benefits, rental income</td></tr>
+          <tr><td style="color:var(--expense)">● Expense</td><td>Regular spending — groceries, utilities, subscriptions</td></tr>
+          <tr><td style="color:var(--savings)">● Savings</td><td>Money moved to savings, TFSA, investments</td></tr>
+          <tr><td style="color:var(--oneoff)">● One-off</td><td>Irregular large purchases — appliance, car repair</td></tr>
+        </tbody>
+      </table>
+      <div class="hc-tip"><span>💡</span><span>Use <strong>Savings</strong> for TFSA and investment deposits — not Expense. Vestry's health score rewards saving behaviour specifically.</span></div>
+      <p class="hc-p">To <strong>edit</strong> a transaction, tap the ✎ pencil icon on any row. To <strong>delete</strong>, tap the ✕ button.</p>
+    </div>
+
+    <!-- 04 DASHBOARD -->
+    <div class="hc-section" id="hs-dash">
+      <div class="hc-num">04</div>
+      <div class="hc-title">Dashboard</div>
+      <div class="hc-sub">Reading your Overview at a glance</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">The four summary cards update for the selected month. Use ‹ and › to browse previous months.</p>
+      <table class="hc-table">
+        <thead><tr><th>Card</th><th>What it shows</th><th>Progress bar</th></tr></thead>
+        <tbody>
+          <tr><td>Income</td><td>Total income this month</td><td>% of income target</td></tr>
+          <tr><td>Expenses</td><td>Expense + One-off total</td><td>% of limit (red if exceeded)</td></tr>
+          <tr><td>Net</td><td>Income minus all outgoings</td><td>—</td></tr>
+          <tr><td>Saved</td><td>Savings transactions total</td><td>% of savings target</td></tr>
+        </tbody>
+      </table>
+      <p class="hc-p">The <strong>motivational banner</strong> greets you by name, shows your first budget intention, and gives a one-line summary of your month. Its tone adapts to your Motivational Style setting.</p>
+    </div>
+
+    <!-- 05 HEALTH SCORE -->
+    <div class="hc-section" id="hs-score">
+      <div class="hc-num">05</div>
+      <div class="hc-title">Budget Health Score</div>
+      <div class="hc-sub">How Vestry grades your financial behaviour</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">The health score (0–100, shown as a letter grade) appears in the sidebar. It's a compass — not a judgment.</p>
+      <div class="hc-score-row"><div class="hc-score-grade" style="color:var(--expense)">D</div><div class="hc-score-track"><div class="hc-score-fill" style="width:30%;background:var(--expense)"></div></div><div class="hc-score-range">0–39</div><div class="hc-score-desc">Spending significantly exceeds income.</div></div>
+      <div class="hc-score-row"><div class="hc-score-grade" style="color:var(--gold)">C</div><div class="hc-score-track"><div class="hc-score-fill" style="width:47%;background:var(--gold)"></div></div><div class="hc-score-range">40–54</div><div class="hc-score-desc">Below-average savings, expenses close to income.</div></div>
+      <div class="hc-score-row"><div class="hc-score-grade" style="color:var(--text2)">B</div><div class="hc-score-track"><div class="hc-score-fill" style="width:62%;background:var(--text3)"></div></div><div class="hc-score-range">55–69</div><div class="hc-score-desc">On track — savings positive, under limit.</div></div>
+      <div class="hc-score-row"><div class="hc-score-grade" style="color:var(--savings)">A</div><div class="hc-score-track"><div class="hc-score-fill" style="width:77%;background:var(--savings)"></div></div><div class="hc-score-range">70–84</div><div class="hc-score-desc">Strong savings rate, well under expense limit.</div></div>
+      <div class="hc-score-row"><div class="hc-score-grade" style="color:var(--income)">A+</div><div class="hc-score-track"><div class="hc-score-fill" style="width:92%;background:var(--income)"></div></div><div class="hc-score-range">85–100</div><div class="hc-score-desc">Savings target met, expenses well under limit.</div></div>
+      <div class="hc-tip"><span>📊</span><span><strong>How it's calculated:</strong> Starts at 50. +30 for savings rate, +20 for expenses under 70% of income, +20 for hitting targets. Deductions for overspending.</span></div>
+    </div>
+
+    <!-- 06 SAVINGS GOALS -->
+    <div class="hc-section" id="hs-goals">
+      <div class="hc-num">06</div>
+      <div class="hc-title">Savings Goals</div>
+      <div class="hc-sub">Tracking progress toward specific milestones</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">A Savings Goal has a name, a target amount, your current balance, and a monthly contribution. Vestry calculates how many months until you reach the goal.</p>
+      <table class="hc-table">
+        <thead><tr><th>Field</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>Goal Name</td><td>Emergency Fund</td></tr>
+          <tr><td>Target ($)</td><td>$15,000</td></tr>
+          <tr><td>Already Saved ($)</td><td>$3,200</td></tr>
+          <tr><td>Monthly Contribution</td><td>$400 → 29 months to goal</td></tr>
+        </tbody>
+      </table>
+      <div class="hc-note"><span>ℹ️</span><span>Goals track a separate running total updated manually. The Saved dashboard card counts Savings-type transactions this month. Use both together.</span></div>
+    </div>
+
+    <!-- 07 RECURRING BILLS -->
+    <div class="hc-section" id="hs-rec">
+      <div class="hc-num">07</div>
+      <div class="hc-title">Recurring Bills</div>
+      <div class="hc-sub">Cataloguing your fixed monthly obligations</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">Recurring Bills is a registry of fixed monthly costs — rent, insurance, subscriptions, utilities. It shows your <strong>committed spend</strong>: the baseline you owe every month before any discretionary spending.</p>
+      <div class="hc-warn"><span>⚠️</span><span><strong>Recurring bills don't auto-generate transactions.</strong> They are a reference list only. When you pay a bill, also log it as an Expense transaction to keep your dashboard totals accurate.</span></div>
+      <div class="hc-tip"><span>💡</span><span>Add all your fixed bills first. The Monthly Fixed total tells you the minimum you need to earn each month — that's your floor.</span></div>
+    </div>
+
+    <!-- 08 SHARING -->
+    <div class="hc-section" id="hs-share">
+      <div class="hc-num">08</div>
+      <div class="hc-title">Sharing & Merge</div>
+      <div class="hc-sub">How couples consolidate finances</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">Use <strong>📤 Share</strong> to export your transactions for a date range. Your partner uses <strong>🔀 Merge</strong> to bring them in. No server, no account — just a JSON file sent over WhatsApp, email, or any channel.</p>
+      <div class="hc-steps">
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">1</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Click 📤 Share</div><div class="hc-step-desc">Opens the Share modal with the current month pre-filled.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">2</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Set date range & owner tag</div><div class="hc-step-desc">Your owner tag stamps every exported transaction so your partner knows which entries are yours.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">3</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Export as JSON & send</div><div class="hc-step-desc">File downloads automatically. Send via any channel.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">4</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">Partner clicks 🔀 Merge</div><div class="hc-step-desc">Preview shows new vs duplicates. Duplicates (same date + description + amount) are skipped automatically.</div></div></div>
+      </div>
+    </div>
+
+    <!-- 09 BACKUP -->
+    <div class="hc-section" id="hs-backup">
+      <div class="hc-num">09</div>
+      <div class="hc-title">Backup & Restore</div>
+      <div class="hc-sub">Protecting your data</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">Vestry stores everything in your browser's local storage. If you clear browser data or switch devices, your data could be lost. <strong>Back up regularly.</strong></p>
+      <div class="hc-cards">
+        <div class="hc-card green"><div class="hc-card-icon">⬇️</div><div class="hc-card-title">Backup (Export)</div><div class="hc-card-body">Click ⬇ Backup in the topbar. Downloads a complete JSON file — all transactions, bills, goals, and config.</div></div>
+        <div class="hc-card blue"><div class="hc-card-icon">⬆️</div><div class="hc-card-title">Restore (Import)</div><div class="hc-card-body">Click ⬆ Restore. Choose a backup JSON. Replaces ALL current data — make sure you have a recent backup first.</div></div>
+      </div>
+      <div class="hc-tip"><span>💡</span><span>Back up at the end of each month. Name files clearly: <code>vestry_backup_2026-03.json</code></span></div>
+    </div>
+
+    <!-- 10 CSV -->
+    <div class="hc-section" id="hs-csv">
+      <div class="hc-num">10</div>
+      <div class="hc-title">Import & Export CSV</div>
+      <div class="hc-sub">Moving data in bulk</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">CSV import is the fastest way to get bank data into Vestry. Most banks let you export a date range as CSV from online banking.</p>
+      <div class="hc-note"><span>📋</span><span><strong>Required format:</strong> Date, Description, Category, Type, Amount<br>Date: YYYY-MM-DD &nbsp;·&nbsp; Type: income / expense / savings / one-off<br>Example: <code>2026-03-15, Loblaws, Groceries, expense, 142.50</code></span></div>
+      <p class="hc-p">Use <strong>Paste CSV</strong> to paste rows directly, or <strong>Import CSV</strong> to upload a file from your device.</p>
+    </div>
+
+    <!-- FAQ -->
+    <div class="hc-section" id="hs-faq">
+      <div class="hc-num">FAQ</div>
+      <div class="hc-title">Frequently Asked Questions</div>
+      <div class="hc-sub">Common questions answered</div>
+      <div class="hc-rule"></div>
+      <div class="hc-faq">
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">Is my data stored in the cloud? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">No. Everything is stored in your browser's localStorage on your device only. Nothing is ever sent to any server.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use Vestry offline? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Yes. Once installed to your home screen, Vestry works fully offline. The service worker caches everything needed.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">I accidentally deleted a transaction. Can I undo it? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">There is no undo in the current version. If you have a recent backup you can restore it, but that replaces all data since the backup. Best practice: back up at the end of each month.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">My partner and I logged the same expense. Will it double-count? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">No. Merge uses duplicate detection — same date, description, and amount = one entry. The merge preview shows exactly how many duplicates will be skipped before you confirm.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I reset Vestry and start fresh? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Open browser developer tools (F12 on desktop), go to Application → Local Storage, and delete entries starting with vestry_. Reload and the setup wizard appears again. Export a backup first!</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I run the setup wizard again? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Delete the localStorage key vestry_ob_done and reload. Your existing transactions and config are preserved — the wizard only writes to config fields.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I change my currency symbol? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Config → Motivational Style section → Currency Symbol. Options: $, £, €, ₹. Updates everywhere in the app immediately.</div></div></div>
+      </div>
+    </div>
+
+  </div><!-- /help-body -->
+</div><!-- /help-overlay -->
+
+<!-- Floating help button -->
+<button class="help-fab" id="help-fab" onclick="openHelp()" title="User Guide">?</button>
 
 </body>
 </html>
