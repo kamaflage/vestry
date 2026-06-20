@@ -1033,6 +1033,7 @@ td.amt.one { color: var(--oneoff); }
   <button class="tbtn" onclick="showPage('recurring');toggleMobMenu()">Bills</button>
   <button class="tbtn" onclick="showPage('savings');toggleMobMenu()">Savings</button>
   <button class="tbtn" onclick="showPage('trends');toggleMobMenu()">Trends</button>
+  <button class="tbtn" onclick="showPage('workhours');toggleMobMenu()">Work Hours</button>
   <button class="tbtn" onclick="showPage('config');toggleMobMenu()">⚙ Config</button>
 </div>
 
@@ -1048,6 +1049,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="sb-item" onclick="showPage('recurring')"    id="nav-recurring"><div class="sb-dot" style="background:var(--text4)"></div>Recurring Bills</div>
   <div class="sb-item" onclick="showPage('savings')"      id="nav-savings"><div class="sb-dot" style="background:var(--savings)"></div>Savings Goals</div>
   <div class="sb-item" onclick="showPage('trends')"       id="nav-trends"><div class="sb-dot" style="background:var(--text4)"></div>Trends</div>
+  <div class="sb-item" onclick="showPage('workhours')"    id="nav-workhours"><div class="sb-dot" style="background:var(--gold)"></div>Work Hours</div>
   <div class="sb-div"></div>
   <div class="sb-label">Add</div>
   <div class="sb-item" onclick="openModal('transaction')"><div class="sb-dot" style="background:var(--income)"></div>+ Transaction</div>
@@ -1114,6 +1116,17 @@ td.amt.one { color: var(--oneoff); }
           <div class="scard-prog-lbl" id="ov-saved-prog-lbl"></div>
         </div>
       </div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-title">Contract Work <span class="sec-tag">hours & mileage</span></div>
+      <button class="btn" onclick="showPage('workhours')">Open →</button>
+    </div>
+    <div class="summary-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="scard"><div class="scard-lbl">Hours YTD</div><div class="scard-val" id="ov-cw-hrs" style="color:var(--gold)">0.0</div><div class="scard-sub">logged this year</div></div>
+      <div class="scard"><div class="scard-lbl">Mileage YTD</div><div class="scard-val" id="ov-cw-dist" style="color:var(--gold)">0.0</div><div class="scard-sub" id="ov-cw-dist-unit">km logged this year</div></div>
+      <div class="scard"><div class="scard-lbl">Unbilled</div><div class="scard-val" id="ov-cw-unbilled" style="color:var(--savings)">$0.00</div><div class="scard-sub">not yet invoiced</div></div>
+      <div class="scard"><div class="scard-lbl">Paid YTD</div><div class="scard-val" id="ov-cw-paid" style="color:var(--income)">$0.00</div><div class="scard-sub">confirmed income</div></div>
     </div>
 
     <div class="sec-hdr">
@@ -1185,6 +1198,49 @@ td.amt.one { color: var(--oneoff); }
     <div class="chart-card"><h3>Spending by Category (all time)</h3><div id="trend-cat"></div></div>
   </div>
 
+  <div class="page" id="page-workhours">
+    <div class="sec-hdr">
+      <div class="sec-title">Work Hours <span class="sec-tag">contract / part-time tracking</span></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="openWorkHourModal()">+ Log Hours</button>
+        <button class="btn" onclick="openMileageModal()">+ Log Mileage</button>
+        <button class="btn" onclick="openInvoiceGenModal()">🧾 Generate Invoice</button>
+      </div>
+    </div>
+
+    <div class="summary-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="scard"><div class="scard-lbl">This Week</div><div class="scard-val" id="wh-week-hrs" style="color:var(--gold)">0.0 hrs</div><div class="scard-sub" id="wh-week-amt">$0.00</div></div>
+      <div class="scard"><div class="scard-lbl">This Month</div><div class="scard-val" id="wh-month-hrs" style="color:var(--gold)">0.0 hrs</div><div class="scard-sub" id="wh-month-amt">$0.00</div></div>
+      <div class="scard"><div class="scard-lbl">Unbilled Hours</div><div class="scard-val" id="wh-unbilled-hrs" style="color:var(--savings)">0.0 hrs</div><div class="scard-sub" id="wh-unbilled-amt">$0.00</div></div>
+      <div class="scard"><div class="scard-lbl">Paid YTD</div><div class="scard-val" id="wh-paid-ytd" style="color:var(--income)">$0.00</div><div class="scard-sub">hours + mileage</div></div>
+    </div>
+
+    <div class="summary-row" style="grid-template-columns:repeat(4,1fr);margin-top:-6px">
+      <div class="scard"><div class="scard-lbl">Mileage This Week</div><div class="scard-val" id="wh-week-dist" style="color:var(--gold)">0.0</div><div class="scard-sub" id="wh-week-dist-amt">$0.00</div></div>
+      <div class="scard"><div class="scard-lbl">Mileage This Month</div><div class="scard-val" id="wh-month-dist" style="color:var(--gold)">0.0</div><div class="scard-sub" id="wh-month-dist-amt">$0.00</div></div>
+      <div class="scard"><div class="scard-lbl">Unbilled Mileage</div><div class="scard-val" id="wh-unbilled-dist" style="color:var(--savings)">0.0</div><div class="scard-sub" id="wh-unbilled-dist-amt">$0.00</div></div>
+      <div class="scard"><div class="scard-lbl">Mileage YTD</div><div class="scard-val" id="wh-dist-ytd" style="color:var(--text2)">0.0</div><div class="scard-sub" id="wh-dist-ytd-unit">km, all entries</div></div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Invoices</div></div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Invoice #</th><th>Range</th><th>Hours</th><th>Distance</th><th style="text-align:right">Amount</th><th>Status</th><th></th></tr></thead>
+      <tbody id="wh-invoice-body"></tbody></table>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Hours Log</div></div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Date</th><th>Hours</th><th>Note</th><th>Status</th><th></th></tr></thead>
+      <tbody id="wh-hours-body"></tbody></table>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Mileage Log</div></div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Date</th><th>Distance</th><th>Odometer</th><th>Note</th><th>Status</th><th></th></tr></thead>
+      <tbody id="wh-mileage-body"></tbody></table>
+    </div>
+  </div>
+
   <div class="page" id="page-config">
     <div class="sec-hdr"><div class="sec-title">Configuration <span class="sec-tag">personalise your budget</span></div></div>
     <div class="config-grid">
@@ -1246,6 +1302,33 @@ td.amt.one { color: var(--oneoff); }
               <option value="₹">₹ — Rupee</option>
             </select>
           </div>
+          <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <h3>Contract Work & Invoicing</h3>
+        <p class="config-desc">Used to generate invoices from your logged hours and to label the income they create. The next invoice number auto-increments each time you generate one.</p>
+        <div class="config-form">
+          <div class="field"><label>Your Name / Business Name (appears as "From")</label><input type="text" id="cfg-inv-name" placeholder="e.g. Chris Roper"></div>
+          <div class="field"><label>Your Address (optional)</label><textarea id="cfg-inv-address" placeholder="Street, City, Province"></textarea></div>
+          <div class="form-grid-2">
+            <div class="field"><label>Client / Company Name (appears as "Bill To")</label><input type="text" id="cfg-inv-company" placeholder="e.g. ACME Corp"></div>
+            <div class="field"><label>Hourly Wage ($)</label><input type="number" id="cfg-inv-wage" min="0" step="0.01" placeholder="e.g. 35.00"></div>
+          </div>
+          <div class="field"><label>Client Address (optional)</label><textarea id="cfg-inv-company-address" placeholder="Street, City, Province"></textarea></div>
+          <div class="form-grid-2">
+            <div class="field"><label>Invoice # Prefix</label><input type="text" id="cfg-inv-prefix" placeholder="e.g. INV-"></div>
+            <div class="field"><label>Next Invoice Number</label><input type="number" id="cfg-inv-next" min="1" step="1" placeholder="e.g. 1"></div>
+          </div>
+          <div class="field"><label>Payment Terms</label><input type="text" id="cfg-inv-terms" placeholder="e.g. Due upon receipt / Net 15"></div>
+          <div class="form-grid-2">
+            <div class="field"><label>Mileage Rate ($ per unit)</label><input type="number" id="cfg-inv-mileage-rate" min="0" step="0.01" placeholder="e.g. 0.68"></div>
+            <div class="field"><label>Distance Unit</label>
+              <select id="cfg-inv-mileage-unit"><option value="km">Kilometers (km)</option><option value="mi">Miles (mi)</option></select>
+            </div>
+          </div>
+          <div class="field"><label>Income Category Label (for budget transactions)</label><input type="text" id="cfg-inv-cat" placeholder="e.g. Contract Income"></div>
           <button class="btn btn-primary" onclick="saveConfig()">Save</button>
         </div>
       </div>
@@ -1332,6 +1415,90 @@ td.amt.one { color: var(--oneoff); }
   </div>
 </div>
 
+<div class="modal-bg" id="modal-workhour">
+  <div class="modal">
+    <h2 id="modal-title-workhour">Log Hours</h2>
+    <input type="hidden" id="wh-id">
+    <div class="form-col">
+      <div class="field"><label>Date</label><input type="date" id="wh-date"></div>
+      <div class="field"><label>Hours Worked</label><input type="number" id="wh-hours" min="0" step="0.25" placeholder="e.g. 7.5"></div>
+      <div class="field"><label>Note (optional)</label><input type="text" id="wh-note" placeholder="e.g. site visit, on-call"></div>
+    </div>
+    <div class="btns">
+      <button class="btn" onclick="closeModal('workhour')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveWorkHour()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-mileage">
+  <div class="modal">
+    <h2 id="modal-title-mileage">Log Mileage</h2>
+    <input type="hidden" id="ml-id">
+    <div class="form-col">
+      <div class="field"><label>Date</label><input type="date" id="ml-date"></div>
+      <div class="field"><label>How are you entering this?</label>
+        <select id="ml-mode" onchange="onMileageModeChange()">
+          <option value="distance">Total distance driven</option>
+          <option value="odometer">Odometer readings (before / after)</option>
+        </select>
+      </div>
+      <div class="field" id="ml-distance-field">
+        <label>Distance (<span id="ml-unit-lbl-1">km</span>)</label>
+        <input type="number" id="ml-distance" min="0" step="0.1" placeholder="e.g. 42.5">
+      </div>
+      <div class="form-grid-2" id="ml-odo-fields" style="display:none">
+        <div class="field"><label>Odometer Before</label><input type="number" id="ml-odo-start" min="0" step="0.1" oninput="recalcMileageDistance()"></div>
+        <div class="field"><label>Odometer After</label><input type="number" id="ml-odo-end" min="0" step="0.1" oninput="recalcMileageDistance()"></div>
+      </div>
+      <div id="ml-odo-calc" style="display:none;font-size:11px;color:var(--text3)"></div>
+      <div class="field"><label>Note / Destination (optional)</label><input type="text" id="ml-note" placeholder="e.g. client site visit"></div>
+    </div>
+    <div class="btns">
+      <button class="btn" onclick="closeModal('mileage')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMileage()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-invoicegen">
+  <div class="modal" style="width:480px;max-width:100%">
+    <h2>Generate Invoice</h2>
+    <p class="modal-sub">Pulls all un-invoiced hours and mileage in the range below and totals them at your configured rates.</p>
+    <div class="form-col">
+      <div class="field"><label>Range</label>
+        <select id="ig-range" onchange="onInvoiceRangeChange()">
+          <option value="week">This Week</option>
+          <option value="lastweek">Last Week</option>
+          <option value="month">This Month</option>
+          <option value="lastmonth">Last Month</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+      <div class="form-grid-2">
+        <div class="field"><label>From</label><input type="date" id="ig-from" oninput="updateInvoiceGenPreview()"></div>
+        <div class="field"><label>To</label><input type="date" id="ig-to" oninput="updateInvoiceGenPreview()"></div>
+      </div>
+      <div id="ig-preview" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:11px;color:var(--text2)"></div>
+    </div>
+    <div class="btns">
+      <button class="btn" onclick="closeModal('invoicegen')">Cancel</button>
+      <button class="btn btn-primary" id="ig-confirm-btn" onclick="generateInvoice()">Generate</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-invoiceview">
+  <div class="modal" style="width:620px;max-width:100%">
+    <div id="iv-content"></div>
+    <div class="btns">
+      <button class="btn" onclick="closeModal('invoiceview')">Close</button>
+      <button class="btn" id="iv-paid-btn" onclick="toggleInvoicePaidFromModal()">Mark as Paid</button>
+      <button class="btn btn-primary" onclick="printInvoiceFromModal()">🖨 Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modal-share">
   <div class="modal" style="width:500px;max-width:100%">
     <h2>Export for Sharing</h2>
@@ -1397,6 +1564,9 @@ var STATE = {
   transactions: [],
   recurring:    [],
   goals:        [],
+  workHours:    [],
+  mileage:      [],
+  invoices:     [],
   config: {
     family:          '',
     person:          '',
@@ -1406,7 +1576,18 @@ var STATE = {
     savingsTarget:   0,
     motivStyle:      'gentle',
     currency:        '$',
-    budgetGoals:     []
+    budgetGoals:     [],
+    invName:         '',
+    invAddress:      '',
+    invCompany:      '',
+    invCompanyAddress: '',
+    invWage:         0,
+    invPrefix:       'INV-',
+    invNext:         1,
+    invTerms:        'Due upon receipt',
+    invCat:          'Contract Income',
+    mileageRate:     0,
+    mileageUnit:     'km'
   },
   currentMonth: new Date().getMonth(),
   currentYear:  new Date().getFullYear()
@@ -1446,6 +1627,9 @@ function load() {
     STATE.transactions = d.transactions || [];
     STATE.recurring    = d.recurring    || [];
     STATE.goals        = d.goals        || [];
+    STATE.workHours    = d.workHours    || [];
+    STATE.mileage      = d.mileage      || [];
+    STATE.invoices     = d.invoices     || [];
     if (d.config) {
       Object.assign(STATE.config, d.config);
       if (!STATE.config.budgetGoals) STATE.config.budgetGoals = [];
@@ -1461,6 +1645,7 @@ function showPage(name) {
   var nav = document.getElementById('nav-' + name);
   if (nav) nav.classList.add('active');
   if (name === 'config') renderConfigPage();
+  if (name === 'workhours') renderWorkHoursPage();
   render();
 }
 
@@ -1510,9 +1695,13 @@ function loadTheme() {
 
 // ── MODALS & EDITING ─────────────────────────────────────────
 function openModal(name, editId) {
-  var elId = document.getElementById(name === 'transaction' ? 'txn-id' : name === 'recurring' ? 'rec-id' : 'goal-id');
+  var elId = document.getElementById(name === 'transaction' ? 'txn-id' : name === 'recurring' ? 'rec-id' : name === 'goal' ? 'goal-id' : name === 'workhour' ? 'wh-id' : null);
   if (elId) elId.value = editId || '';
-  document.getElementById('modal-title-' + name).textContent = editId ? 'Edit ' + (name==='transaction'?'Transaction':name==='recurring'?'Bill':'Goal') : 'Add ' + (name==='transaction'?'Transaction':name==='recurring'?'Recurring Bill':'Savings Goal');
+  if (name === 'workhour') {
+    document.getElementById('modal-title-workhour').textContent = editId ? 'Edit Hours' : 'Log Hours';
+  } else {
+    document.getElementById('modal-title-' + name).textContent = editId ? 'Edit ' + (name==='transaction'?'Transaction':name==='recurring'?'Bill':'Goal') : 'Add ' + (name==='transaction'?'Transaction':name==='recurring'?'Recurring Bill':'Savings Goal');
+  }
 
   if (name === 'transaction') {
     if (editId) {
@@ -1564,9 +1753,24 @@ function openModal(name, editId) {
       document.getElementById('goal-current').value = '0';
       document.getElementById('goal-monthly').value = '';
     }
+  } else if (name === 'workhour') {
+    if (editId) {
+      var wh = STATE.workHours.find(function(x){ return x.id == editId; });
+      if (wh) {
+        document.getElementById('wh-date').value  = wh.date;
+        document.getElementById('wh-hours').value = wh.hours;
+        document.getElementById('wh-note').value  = wh.note || '';
+      }
+    } else {
+      var dnow = new Date();
+      document.getElementById('wh-date').value  = dnow.toISOString().split('T')[0];
+      document.getElementById('wh-hours').value = '';
+      document.getElementById('wh-note').value  = '';
+    }
   }
   document.getElementById('modal-' + name).classList.add('open');
 }
+function openWorkHourModal(editId) { openModal('workhour', editId); }
 
 function closeModal(name) { document.getElementById('modal-' + name).classList.remove('open'); }
 document.querySelectorAll('.modal-bg').forEach(function(bg){
@@ -1692,6 +1896,454 @@ function deleteGoal(id) {
   save(); render();
 }
 
+// ── WORK HOURS ───────────────────────────────────────────────
+function saveWorkHour() {
+  var editId = document.getElementById('wh-id').value;
+  var date   = document.getElementById('wh-date').value;
+  var hours  = parseFloat(document.getElementById('wh-hours').value);
+  var note   = document.getElementById('wh-note').value.trim();
+
+  if (!date || isNaN(hours) || hours <= 0) return;
+
+  if (editId) {
+    var idx = STATE.workHours.findIndex(function(w){ return w.id == editId; });
+    if (idx > -1) {
+      var existing = STATE.workHours[idx];
+      STATE.workHours[idx] = { id: parseFloat(editId), date, hours, note, invoiceId: existing.invoiceId || null };
+    }
+  } else {
+    STATE.workHours.push({ id: Date.now(), date, hours, note, invoiceId: null });
+  }
+  STATE.workHours.sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+  save(); closeModal('workhour'); renderWorkHoursPage();
+}
+function deleteWorkHour(id) {
+  var w = STATE.workHours.find(function(x){ return x.id === id; });
+  if (w && w.invoiceId) { alert('This entry is already on an invoice. Delete the invoice first if you need to remove it.'); return; }
+  STATE.workHours = STATE.workHours.filter(function(x){ return x.id !== id; });
+  save(); renderWorkHoursPage();
+}
+
+// ── MILEAGE ──────────────────────────────────────────────────
+function distUnit() { return STATE.config.mileageUnit || 'km'; }
+function openMileageModal(editId) {
+  document.getElementById('ml-id').value = editId || '';
+  document.getElementById('modal-title-mileage').textContent = editId ? 'Edit Mileage' : 'Log Mileage';
+  document.getElementById('ml-unit-lbl-1').textContent = distUnit();
+  if (editId) {
+    var m = STATE.mileage.find(function(x){ return x.id == editId; });
+    if (m) {
+      document.getElementById('ml-date').value     = m.date;
+      document.getElementById('ml-mode').value     = m.mode || 'distance';
+      document.getElementById('ml-distance').value = m.distance;
+      document.getElementById('ml-odo-start').value = m.odoStart != null ? m.odoStart : '';
+      document.getElementById('ml-odo-end').value   = m.odoEnd != null ? m.odoEnd : '';
+      document.getElementById('ml-note').value     = m.note || '';
+    }
+  } else {
+    var dnow = new Date();
+    document.getElementById('ml-date').value     = dnow.toISOString().split('T')[0];
+    document.getElementById('ml-mode').value     = 'distance';
+    document.getElementById('ml-distance').value = '';
+    document.getElementById('ml-odo-start').value = '';
+    document.getElementById('ml-odo-end').value   = '';
+    document.getElementById('ml-note').value     = '';
+  }
+  onMileageModeChange();
+  document.getElementById('modal-mileage').classList.add('open');
+}
+function onMileageModeChange() {
+  var mode = document.getElementById('ml-mode').value;
+  document.getElementById('ml-distance-field').style.display = mode === 'distance' ? 'block' : 'none';
+  document.getElementById('ml-odo-fields').style.display     = mode === 'odometer' ? 'grid'  : 'none';
+  document.getElementById('ml-odo-calc').style.display       = mode === 'odometer' ? 'block' : 'none';
+  if (mode === 'odometer') recalcMileageDistance();
+}
+function recalcMileageDistance() {
+  var s = parseFloat(document.getElementById('ml-odo-start').value);
+  var e = parseFloat(document.getElementById('ml-odo-end').value);
+  var calc = document.getElementById('ml-odo-calc');
+  if (!isNaN(s) && !isNaN(e) && e >= s) {
+    var d = e - s;
+    document.getElementById('ml-distance').value = d;
+    calc.textContent = '= ' + d.toFixed(1) + ' ' + distUnit() + ' driven';
+  } else {
+    calc.textContent = 'Enter both readings (after ≥ before) to auto-calculate.';
+  }
+}
+function saveMileage() {
+  var editId = document.getElementById('ml-id').value;
+  var date   = document.getElementById('ml-date').value;
+  var mode   = document.getElementById('ml-mode').value;
+  var distance = parseFloat(document.getElementById('ml-distance').value);
+  var odoStart = document.getElementById('ml-odo-start').value === '' ? null : parseFloat(document.getElementById('ml-odo-start').value);
+  var odoEnd   = document.getElementById('ml-odo-end').value === ''   ? null : parseFloat(document.getElementById('ml-odo-end').value);
+  var note   = document.getElementById('ml-note').value.trim();
+
+  if (mode === 'odometer') {
+    if (odoStart == null || odoEnd == null || odoEnd < odoStart) return;
+    distance = odoEnd - odoStart;
+  }
+  if (!date || isNaN(distance) || distance <= 0) return;
+
+  if (editId) {
+    var idx = STATE.mileage.findIndex(function(m){ return m.id == editId; });
+    if (idx > -1) {
+      var existing = STATE.mileage[idx];
+      STATE.mileage[idx] = { id: parseFloat(editId), date, mode, distance, odoStart, odoEnd, note, invoiceId: existing.invoiceId || null };
+    }
+  } else {
+    STATE.mileage.push({ id: Date.now(), date, mode, distance, odoStart, odoEnd, note, invoiceId: null });
+  }
+  STATE.mileage.sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+  save(); closeModal('mileage'); renderWorkHoursPage();
+}
+function deleteMileage(id) {
+  var m = STATE.mileage.find(function(x){ return x.id === id; });
+  if (m && m.invoiceId) { alert('This entry is already on an invoice. Delete the invoice first if you need to remove it.'); return; }
+  STATE.mileage = STATE.mileage.filter(function(x){ return x.id !== id; });
+  save(); renderWorkHoursPage();
+}
+
+function dateStr(d) { return d.toISOString().split('T')[0]; }
+function startOfWeek(d) {
+  var x = new Date(d); var day = x.getDay();
+  x.setDate(x.getDate() - day); x.setHours(0,0,0,0); return x;
+}
+function rangeForPreset(preset) {
+  var today = new Date();
+  if (preset === 'week') {
+    var s = startOfWeek(today); var e = new Date(s); e.setDate(e.getDate()+6);
+    return [dateStr(s), dateStr(e)];
+  }
+  if (preset === 'lastweek') {
+    var s2 = startOfWeek(today); s2.setDate(s2.getDate()-7); var e2 = new Date(s2); e2.setDate(e2.getDate()+6);
+    return [dateStr(s2), dateStr(e2)];
+  }
+  if (preset === 'month') {
+    var s3 = new Date(today.getFullYear(), today.getMonth(), 1);
+    var e3 = new Date(today.getFullYear(), today.getMonth()+1, 0);
+    return [dateStr(s3), dateStr(e3)];
+  }
+  if (preset === 'lastmonth') {
+    var s4 = new Date(today.getFullYear(), today.getMonth()-1, 1);
+    var e4 = new Date(today.getFullYear(), today.getMonth(), 0);
+    return [dateStr(s4), dateStr(e4)];
+  }
+  return [dateStr(today), dateStr(today)];
+}
+
+function unbilledEntries(list) { return (list || STATE.workHours).filter(function(w){ return !w.invoiceId; }); }
+function entriesInRange(list, from, to) {
+  return list.filter(function(w){ return w.date >= from && w.date <= to; });
+}
+function sumHours(list) { return list.reduce(function(s,w){ return s + w.hours; }, 0); }
+function sumDist(list) { return list.reduce(function(s,m){ return s + m.distance; }, 0); }
+
+function renderWorkHoursPage() {
+  var c = STATE.config;
+  var wage = c.invWage || 0;
+  var mRate = c.mileageRate || 0;
+  var unit = distUnit();
+
+  var wk = rangeForPreset('week');
+  var mo = rangeForPreset('month');
+  var weekHrs  = sumHours(entriesInRange(STATE.workHours, wk[0], wk[1]));
+  var monthHrs = sumHours(entriesInRange(STATE.workHours, mo[0], mo[1]));
+  var unbilledHrs = sumHours(unbilledEntries(STATE.workHours));
+
+  var weekDist  = sumDist(entriesInRange(STATE.mileage, wk[0], wk[1]));
+  var monthDist = sumDist(entriesInRange(STATE.mileage, mo[0], mo[1]));
+  var unbilledDist = sumDist(unbilledEntries(STATE.mileage));
+  var ytdDist = sumDist(STATE.mileage.filter(function(m){ return m.date.startsWith(String(STATE.currentYear)); }));
+
+  document.getElementById('wh-week-hrs').textContent  = weekHrs.toFixed(1) + ' hrs';
+  document.getElementById('wh-week-amt').textContent  = fmt(weekHrs * wage);
+  document.getElementById('wh-month-hrs').textContent = monthHrs.toFixed(1) + ' hrs';
+  document.getElementById('wh-month-amt').textContent = fmt(monthHrs * wage);
+  document.getElementById('wh-unbilled-hrs').textContent = unbilledHrs.toFixed(1) + ' hrs';
+  document.getElementById('wh-unbilled-amt').textContent = fmt(unbilledHrs * wage + unbilledDist * mRate);
+
+  document.getElementById('wh-week-dist').textContent  = weekDist.toFixed(1) + ' ' + unit;
+  document.getElementById('wh-week-dist-amt').textContent  = fmt(weekDist * mRate);
+  document.getElementById('wh-month-dist').textContent = monthDist.toFixed(1) + ' ' + unit;
+  document.getElementById('wh-month-dist-amt').textContent = fmt(monthDist * mRate);
+  document.getElementById('wh-unbilled-dist').textContent = unbilledDist.toFixed(1) + ' ' + unit;
+  document.getElementById('wh-unbilled-dist-amt').textContent = fmt(unbilledDist * mRate);
+  document.getElementById('wh-dist-ytd').textContent = ytdDist.toFixed(1);
+  document.getElementById('wh-dist-ytd-unit').textContent = unit + ', all entries';
+
+  var yearStr = String(STATE.currentYear);
+  var paidYTD = STATE.invoices.filter(function(inv){ return inv.status === 'paid' && inv.paidDate && inv.paidDate.startsWith(yearStr); })
+    .reduce(function(s,inv){ return s + inv.totalAmount; }, 0);
+  document.getElementById('wh-paid-ytd').textContent = fmt(paidYTD);
+
+  var invHtml = STATE.invoices.length === 0
+    ? '<tr class="empty-row"><td colspan="7">No invoices generated yet.</td></tr>'
+    : STATE.invoices.slice().sort(function(a,b){ return b.id - a.id; }).map(function(inv){
+        var statusPill = inv.status === 'paid'
+          ? '<span class="pill pill-income">Paid</span>'
+          : '<span class="pill pill-expense">Unpaid</span>';
+        var distCell = (inv.totalDistance || 0) > 0 ? inv.totalDistance.toFixed(1) + ' ' + (inv.mileageUnit || 'km') : '—';
+        return '<tr>' +
+          '<td>' + esc(inv.number) + '</td>' +
+          '<td>' + esc(inv.from) + ' → ' + esc(inv.to) + '</td>' +
+          '<td>' + inv.totalHours.toFixed(1) + '</td>' +
+          '<td>' + distCell + '</td>' +
+          '<td style="text-align:right" class="amt pos">' + fmt(inv.totalAmount) + '</td>' +
+          '<td>' + statusPill + '</td>' +
+          '<td><div style="display:flex;gap:4px;justify-content:flex-end">' +
+          '<button class="del-btn edit-btn" onclick="viewInvoice(' + inv.id + ')" title="View">👁</button>' +
+          '<button class="del-btn" onclick="deleteInvoice(' + inv.id + ')" title="Delete">✕</button></div></td></tr>';
+      }).join('');
+  document.getElementById('wh-invoice-body').innerHTML = invHtml;
+
+  var hrsHtml = STATE.workHours.length === 0
+    ? '<tr class="empty-row"><td colspan="5">No hours logged yet — click "+ Log Hours" to start.</td></tr>'
+    : STATE.workHours.map(function(w){
+        var statusPill = w.invoiceId
+          ? '<span class="pill pill-savings">Invoiced</span>'
+          : '<span class="pill pill-oneoff">Unbilled</span>';
+        return '<tr>' +
+          '<td>' + esc(w.date) + '</td>' +
+          '<td>' + w.hours.toFixed(2) + '</td>' +
+          '<td style="color:var(--text3)">' + esc(w.note || '') + '</td>' +
+          '<td>' + statusPill + '</td>' +
+          '<td><div style="display:flex;gap:4px;justify-content:flex-end">' +
+          '<button class="del-btn edit-btn" onclick="openWorkHourModal(' + w.id + ')" title="Edit">✎</button>' +
+          '<button class="del-btn" onclick="deleteWorkHour(' + w.id + ')" title="Delete">✕</button></div></td></tr>';
+      }).join('');
+  document.getElementById('wh-hours-body').innerHTML = hrsHtml;
+
+  var mlHtml = STATE.mileage.length === 0
+    ? '<tr class="empty-row"><td colspan="6">No mileage logged yet — click "+ Log Mileage" to start.</td></tr>'
+    : STATE.mileage.map(function(m){
+        var statusPill = m.invoiceId
+          ? '<span class="pill pill-savings">Invoiced</span>'
+          : '<span class="pill pill-oneoff">Unbilled</span>';
+        var odoCell = (m.odoStart != null && m.odoEnd != null) ? (m.odoStart.toFixed(1) + ' → ' + m.odoEnd.toFixed(1)) : '—';
+        return '<tr>' +
+          '<td>' + esc(m.date) + '</td>' +
+          '<td>' + m.distance.toFixed(1) + ' ' + unit + '</td>' +
+          '<td style="color:var(--text3)">' + odoCell + '</td>' +
+          '<td style="color:var(--text3)">' + esc(m.note || '') + '</td>' +
+          '<td>' + statusPill + '</td>' +
+          '<td><div style="display:flex;gap:4px;justify-content:flex-end">' +
+          '<button class="del-btn edit-btn" onclick="openMileageModal(' + m.id + ')" title="Edit">✎</button>' +
+          '<button class="del-btn" onclick="deleteMileage(' + m.id + ')" title="Delete">✕</button></div></td></tr>';
+      }).join('');
+  document.getElementById('wh-mileage-body').innerHTML = mlHtml;
+}
+
+// ── INVOICE GENERATION ──────────────────────────────────────
+function openInvoiceGenModal() {
+  document.getElementById('ig-range').value = 'week';
+  onInvoiceRangeChange();
+  document.getElementById('modal-invoicegen').classList.add('open');
+}
+function onInvoiceRangeChange() {
+  var preset = document.getElementById('ig-range').value;
+  var fromEl = document.getElementById('ig-from'), toEl = document.getElementById('ig-to');
+  if (preset !== 'custom') {
+    var r = rangeForPreset(preset);
+    fromEl.value = r[0]; toEl.value = r[1];
+  }
+  updateInvoiceGenPreview();
+}
+function updateInvoiceGenPreview() {
+  var from = document.getElementById('ig-from').value;
+  var to   = document.getElementById('ig-to').value;
+  var prev = document.getElementById('ig-preview');
+  var btn  = document.getElementById('ig-confirm-btn');
+  if (!from || !to || from > to) { prev.innerHTML = 'Pick a valid date range.'; btn.disabled = true; btn.style.opacity = .4; return; }
+  var matchedHrs = entriesInRange(unbilledEntries(STATE.workHours), from, to);
+  var matchedDist = entriesInRange(unbilledEntries(STATE.mileage), from, to);
+  var hrs = sumHours(matchedHrs);
+  var dist = sumDist(matchedDist);
+  var wage = STATE.config.invWage || 0;
+  var mRate = STATE.config.mileageRate || 0;
+  var unit = distUnit();
+  if (matchedHrs.length === 0 && matchedDist.length === 0) {
+    prev.innerHTML = 'No un-invoiced hours or mileage found in this range.';
+    btn.disabled = true; btn.style.opacity = .4;
+    return;
+  }
+  var lines = [];
+  if (matchedHrs.length > 0) lines.push(matchedHrs.length + ' day(s) · <strong>' + hrs.toFixed(2) + ' hrs</strong> × ' + fmt(wage) + '/hr = <strong>' + fmt(hrs * wage) + '</strong>');
+  if (matchedDist.length > 0) lines.push(matchedDist.length + ' trip(s) · <strong>' + dist.toFixed(1) + ' ' + unit + '</strong> × ' + fmt(mRate) + '/' + unit + ' = <strong>' + fmt(dist * mRate) + '</strong>');
+  var total = hrs * wage + dist * mRate;
+  var warn = '';
+  if (matchedHrs.length > 0 && wage === 0) warn += '<br><span style="color:var(--expense)">⚠ Set your hourly wage in Config.</span>';
+  if (matchedDist.length > 0 && mRate === 0) warn += '<br><span style="color:var(--expense)">⚠ Set your mileage rate in Config.</span>';
+  prev.innerHTML = lines.join('<br>') + '<br>Total: <strong>' + fmt(total) + '</strong>' + warn;
+  var blocked = (matchedHrs.length > 0 && wage === 0) || (matchedDist.length > 0 && mRate === 0);
+  btn.disabled = blocked; btn.style.opacity = blocked ? .4 : 1;
+}
+function generateInvoice() {
+  var from = document.getElementById('ig-from').value;
+  var to   = document.getElementById('ig-to').value;
+  var matchedHrs = entriesInRange(unbilledEntries(STATE.workHours), from, to);
+  var matchedDist = entriesInRange(unbilledEntries(STATE.mileage), from, to);
+  var wage = STATE.config.invWage || 0;
+  var mRate = STATE.config.mileageRate || 0;
+  if (matchedHrs.length === 0 && matchedDist.length === 0) return;
+  if ((matchedHrs.length > 0 && wage <= 0) || (matchedDist.length > 0 && mRate <= 0)) return;
+
+  var hrs = sumHours(matchedHrs);
+  var dist = sumDist(matchedDist);
+  var c = STATE.config;
+  var num = (c.invPrefix || 'INV-') + String(c.invNext || 1).padStart(4, '0');
+  var unit = distUnit();
+
+  var invoice = {
+    id: Date.now(),
+    number: num,
+    from: from, to: to,
+    createdDate: dateStr(new Date()),
+    contractorName: c.invName, contractorAddress: c.invAddress,
+    companyName: c.invCompany, companyAddress: c.invCompanyAddress,
+    hourlyWage: wage, totalHours: hrs,
+    mileageRate: mRate, mileageUnit: unit, totalDistance: dist,
+    totalAmount: hrs * wage + dist * mRate,
+    terms: c.invTerms, catLabel: c.invCat || 'Contract Income',
+    status: 'unpaid', paidDate: null, transactionId: null,
+    entryIds: matchedHrs.map(function(m){ return m.id; }),
+    mileageEntryIds: matchedDist.map(function(m){ return m.id; }),
+    lineItems: matchedHrs.map(function(m){ return { date: m.date, hours: m.hours, note: m.note || '' }; })
+      .sort(function(a,b){ return a.date.localeCompare(b.date); }),
+    mileageLineItems: matchedDist.map(function(m){ return { date: m.date, distance: m.distance, note: m.note || '' }; })
+      .sort(function(a,b){ return a.date.localeCompare(b.date); })
+  };
+
+  matchedHrs.forEach(function(m){
+    var w = STATE.workHours.find(function(x){ return x.id === m.id; });
+    if (w) w.invoiceId = invoice.id;
+  });
+  matchedDist.forEach(function(m){
+    var d = STATE.mileage.find(function(x){ return x.id === m.id; });
+    if (d) d.invoiceId = invoice.id;
+  });
+
+  STATE.invoices.push(invoice);
+  STATE.config.invNext = (c.invNext || 1) + 1;
+
+  save();
+  closeModal('invoicegen');
+  renderWorkHoursPage();
+  viewInvoice(invoice.id);
+}
+
+// ── INVOICE VIEW / PRINT / PAID ─────────────────────────────
+var _viewingInvoiceId = null;
+function invoiceHTML(inv) {
+  var rows = (inv.lineItems || []).map(function(li){
+    return '<tr><td>' + esc(li.date) + '</td><td>' + esc(li.note) + '</td><td style="text-align:right">' + li.hours.toFixed(2) + '</td></tr>';
+  }).join('');
+  var mileageRows = (inv.mileageLineItems || []).map(function(li){
+    return '<tr><td>' + esc(li.date) + '</td><td>' + esc(li.note) + '</td><td style="text-align:right">' + li.distance.toFixed(1) + ' ' + (inv.mileageUnit||'km') + '</td></tr>';
+  }).join('');
+  return '' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">' +
+      '<div><div style="font-size:1.3rem;font-family:var(--serif)">Invoice ' + esc(inv.number) + '</div>' +
+      '<div style="font-size:11px;color:var(--text3)">Date: ' + esc(inv.createdDate) + ' · Period: ' + esc(inv.from) + ' to ' + esc(inv.to) + '</div></div>' +
+      '<div style="font-size:11px;color:var(--text3);text-align:right">Terms: ' + esc(inv.terms || '—') + '</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:24px;margin-bottom:18px">' +
+      '<div style="flex:1"><div style="font-size:9px;letter-spacing:1px;color:var(--text4);text-transform:uppercase">From</div>' +
+        '<div>' + esc(inv.contractorName || '—') + '</div><div style="font-size:11px;color:var(--text3);white-space:pre-line">' + esc(inv.contractorAddress || '') + '</div></div>' +
+      '<div style="flex:1"><div style="font-size:9px;letter-spacing:1px;color:var(--text4);text-transform:uppercase">Bill To</div>' +
+        '<div>' + esc(inv.companyName || '—') + '</div><div style="font-size:11px;color:var(--text3);white-space:pre-line">' + esc(inv.companyAddress || '') + '</div></div>' +
+    '</div>' +
+    (rows ?
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><thead><tr style="border-bottom:1px solid var(--border)">' +
+      '<th style="text-align:left;padding:6px 0">Date</th><th style="text-align:left">Note</th><th style="text-align:right">Hours</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' : '') +
+    (mileageRows ?
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><thead><tr style="border-bottom:1px solid var(--border)">' +
+      '<th style="text-align:left;padding:6px 0">Date</th><th style="text-align:left">Note</th><th style="text-align:right">Distance</th></tr></thead>' +
+      '<tbody>' + mileageRows + '</tbody></table>' : '') +
+    '<div style="display:flex;justify-content:flex-end;gap:32px;border-top:1px solid var(--border);padding-top:10px">' +
+      '<div style="text-align:right;font-size:11px;color:var(--text3)">' +
+        (inv.totalHours > 0 ? 'Hours: ' + inv.totalHours.toFixed(2) + ' × ' + fmt(inv.hourlyWage) + '/hr = ' + fmt(inv.totalHours * inv.hourlyWage) + '<br>' : '') +
+        ((inv.totalDistance||0) > 0 ? 'Mileage: ' + inv.totalDistance.toFixed(1) + ' ' + (inv.mileageUnit||'km') + ' × ' + fmt(inv.mileageRate||0) + '/' + (inv.mileageUnit||'km') + ' = ' + fmt(inv.totalDistance * (inv.mileageRate||0)) : '') +
+      '</div>' +
+      '<div style="text-align:right;font-size:1.2rem;font-family:var(--serif)">Total Due<br><strong>' + fmt(inv.totalAmount) + '</strong></div>' +
+    '</div>' +
+    '<div style="margin-top:14px;font-size:11px;color:var(--text3)">Status: ' + (inv.status === 'paid' ? 'Paid on ' + esc(inv.paidDate) : 'Unpaid') + '</div>';
+}
+function viewInvoice(id) {
+  var inv = STATE.invoices.find(function(x){ return x.id === id; });
+  if (!inv) return;
+  _viewingInvoiceId = id;
+  document.getElementById('iv-content').innerHTML = invoiceHTML(inv);
+  var btn = document.getElementById('iv-paid-btn');
+  btn.textContent = inv.status === 'paid' ? 'Mark as Unpaid' : 'Mark as Paid';
+  document.getElementById('modal-invoiceview').classList.add('open');
+}
+function toggleInvoicePaidFromModal() {
+  if (_viewingInvoiceId != null) toggleInvoicePaid(_viewingInvoiceId);
+  viewInvoice(_viewingInvoiceId);
+}
+function toggleInvoicePaid(id) {
+  var inv = STATE.invoices.find(function(x){ return x.id === id; });
+  if (!inv) return;
+  if (inv.status === 'unpaid') {
+    inv.status = 'paid';
+    inv.paidDate = dateStr(new Date());
+    var txn = {
+      id: Date.now(),
+      date: inv.paidDate,
+      desc: 'Invoice ' + inv.number + ' — ' + (inv.companyName || 'Contract work'),
+      cat: inv.catLabel || 'Contract Income',
+      type: 'income',
+      amt: inv.totalAmount,
+      owner: STATE.config.ownerTag || STATE.config.person || ''
+    };
+    STATE.transactions.push(txn);
+    STATE.transactions.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    inv.transactionId = txn.id;
+  } else {
+    inv.status = 'unpaid';
+    inv.paidDate = null;
+    if (inv.transactionId) {
+      STATE.transactions = STATE.transactions.filter(function(t){ return t.id !== inv.transactionId; });
+      inv.transactionId = null;
+    }
+  }
+  save();
+  renderWorkHoursPage();
+  render();
+}
+function deleteInvoice(id) {
+  var inv = STATE.invoices.find(function(x){ return x.id === id; });
+  if (!inv) return;
+  if (!confirm('Delete invoice ' + inv.number + '? Its logged hours will become unbilled again.')) return;
+  if (inv.transactionId) {
+    STATE.transactions = STATE.transactions.filter(function(t){ return t.id !== inv.transactionId; });
+  }
+  STATE.workHours.forEach(function(w){ if (w.invoiceId === id) w.invoiceId = null; });
+  STATE.mileage.forEach(function(m){ if (m.invoiceId === id) m.invoiceId = null; });
+  STATE.invoices = STATE.invoices.filter(function(x){ return x.id !== id; });
+  save();
+  renderWorkHoursPage();
+  render();
+}
+function printInvoiceFromModal() {
+  if (_viewingInvoiceId == null) return;
+  var inv = STATE.invoices.find(function(x){ return x.id === _viewingInvoiceId; });
+  if (!inv) return;
+  var w = window.open('', '_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>Invoice ' + esc(inv.number) + '</title>' +
+    '<style>body{font-family:Georgia,serif;color:#1c1a16;padding:32px;max-width:680px;margin:0 auto}' +
+    'table{width:100%;border-collapse:collapse}th,td{padding:6px 0}' +
+    '@media print{body{padding:0}}</style></head><body>' + invoiceHTML(inv) + '</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); }, 250);
+}
+
 // ── CONFIG ───────────────────────────────────────────────────
 function saveConfig() {
   STATE.config.family        = document.getElementById('cfg-family').value.trim();
@@ -1702,6 +2354,17 @@ function saveConfig() {
   STATE.config.savingsTarget = parseFloat(document.getElementById('cfg-savings-target').value) || 0;
   STATE.config.motivStyle    = document.getElementById('cfg-style').value;
   STATE.config.currency      = document.getElementById('cfg-currency').value;
+  STATE.config.invName            = document.getElementById('cfg-inv-name').value.trim();
+  STATE.config.invAddress         = document.getElementById('cfg-inv-address').value.trim();
+  STATE.config.invCompany         = document.getElementById('cfg-inv-company').value.trim();
+  STATE.config.invCompanyAddress  = document.getElementById('cfg-inv-company-address').value.trim();
+  STATE.config.invWage            = parseFloat(document.getElementById('cfg-inv-wage').value) || 0;
+  STATE.config.invPrefix          = document.getElementById('cfg-inv-prefix').value.trim() || 'INV-';
+  STATE.config.invNext            = parseInt(document.getElementById('cfg-inv-next').value) || 1;
+  STATE.config.invTerms           = document.getElementById('cfg-inv-terms').value.trim();
+  STATE.config.invCat             = document.getElementById('cfg-inv-cat').value.trim() || 'Contract Income';
+  STATE.config.mileageRate        = parseFloat(document.getElementById('cfg-inv-mileage-rate').value) || 0;
+  STATE.config.mileageUnit        = document.getElementById('cfg-inv-mileage-unit').value || 'km';
   save();
   renderBranding();
   render();
@@ -1720,6 +2383,17 @@ function renderConfigPage() {
   document.getElementById('cfg-savings-target').value  = c.savingsTarget || '';
   document.getElementById('cfg-style').value           = c.motivStyle || 'gentle';
   document.getElementById('cfg-currency').value        = c.currency || '$';
+  document.getElementById('cfg-inv-name').value            = c.invName || '';
+  document.getElementById('cfg-inv-address').value         = c.invAddress || '';
+  document.getElementById('cfg-inv-company').value         = c.invCompany || '';
+  document.getElementById('cfg-inv-company-address').value = c.invCompanyAddress || '';
+  document.getElementById('cfg-inv-wage').value             = c.invWage || '';
+  document.getElementById('cfg-inv-prefix').value           = c.invPrefix || 'INV-';
+  document.getElementById('cfg-inv-next').value              = c.invNext || 1;
+  document.getElementById('cfg-inv-terms').value             = c.invTerms || '';
+  document.getElementById('cfg-inv-cat').value               = c.invCat || 'Contract Income';
+  document.getElementById('cfg-inv-mileage-rate').value       = c.mileageRate || '';
+  document.getElementById('cfg-inv-mileage-unit').value       = c.mileageUnit || 'km';
   renderBudgetGoalsList();
 }
 
@@ -1919,6 +2593,21 @@ function render() {
   var netEl = document.getElementById('ov-net');
   netEl.textContent = (net >= 0 ? '+' : '−') + fmt(net);
   netEl.style.color = net >= 0 ? 'var(--income)' : 'var(--expense)';
+
+  var ytdStr = String(STATE.currentYear);
+  var cwHrsYTD  = sumHours(STATE.workHours.filter(function(w){ return w.date.startsWith(ytdStr); }));
+  var cwDistYTD = sumDist(STATE.mileage.filter(function(m){ return m.date.startsWith(ytdStr); }));
+  var cwUnbilled = sumHours(unbilledEntries(STATE.workHours)) * (c.invWage || 0) + sumDist(unbilledEntries(STATE.mileage)) * (c.mileageRate || 0);
+  var cwPaidYTD = STATE.invoices.filter(function(inv){ return inv.status === 'paid' && inv.paidDate && inv.paidDate.startsWith(ytdStr); })
+    .reduce(function(s,inv){ return s + inv.totalAmount; }, 0);
+  var ovCwHrs = document.getElementById('ov-cw-hrs');
+  if (ovCwHrs) {
+    ovCwHrs.textContent = cwHrsYTD.toFixed(1);
+    document.getElementById('ov-cw-dist').textContent = cwDistYTD.toFixed(1);
+    document.getElementById('ov-cw-dist-unit').textContent = distUnit() + ' logged this year';
+    document.getElementById('ov-cw-unbilled').textContent = fmt(cwUnbilled);
+    document.getElementById('ov-cw-paid').textContent = fmt(cwPaidYTD);
+  }
 
   function setCardProg(progId, fillId, lblId, actual, target, color, suffix) {
     var prog = document.getElementById(progId);
@@ -2605,9 +3294,10 @@ document.addEventListener('keydown', function(e) {
     <button class="help-tab" onclick="helpTabClick(this,'hs-score')"><span class="help-tab-num">05</span>Health Score</button>
     <button class="help-tab" onclick="helpTabClick(this,'hs-goals')"><span class="help-tab-num">06</span>Goals</button>
     <button class="help-tab" onclick="helpTabClick(this,'hs-rec')"><span class="help-tab-num">07</span>Recurring Bills</button>
-    <button class="help-tab" onclick="helpTabClick(this,'hs-share')"><span class="help-tab-num">08</span>Sharing</button>
-    <button class="help-tab" onclick="helpTabClick(this,'hs-backup')"><span class="help-tab-num">09</span>Backup</button>
-    <button class="help-tab" onclick="helpTabClick(this,'hs-csv')"><span class="help-tab-num">10</span>CSV</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-work')"><span class="help-tab-num">08</span>Work & Invoicing</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-share')"><span class="help-tab-num">09</span>Sharing</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-backup')"><span class="help-tab-num">10</span>Backup</button>
+    <button class="help-tab" onclick="helpTabClick(this,'hs-csv')"><span class="help-tab-num">11</span>CSV</button>
     <button class="help-tab" onclick="helpTabClick(this,'hs-faq')"><span class="help-tab-num">FAQ</span>FAQ</button>
   </div>
 
@@ -2730,9 +3420,32 @@ document.addEventListener('keydown', function(e) {
       <div class="hc-tip"><span>💡</span><span>Add all your fixed bills first. The Monthly Fixed total tells you the minimum you need to earn each month — that's your floor.</span></div>
     </div>
 
-    <!-- 08 SHARING -->
-    <div class="hc-section" id="hs-share">
+    <!-- 08 WORK & INVOICING -->
+    <div class="hc-section" id="hs-work">
       <div class="hc-num">08</div>
+      <div class="hc-title">Work Hours, Mileage & Invoicing</div>
+      <div class="hc-sub">For contractors and part-time work: log time, log driving, bill it, track it as income</div>
+      <div class="hc-rule"></div>
+      <p class="hc-p">The <strong>Work Hours</strong> page (sidebar) is a separate ledger for hours and mileage you plan to invoice a client or employer for. It stays separate from your household budget until you mark an invoice <strong>Paid</strong> — at that point it becomes a real Income transaction automatically.</p>
+
+      <p class="hc-p"><strong>Step 1 — Set up Config first.</strong> Go to Config → Contract Work & Invoicing and fill in your name, your client's name, your hourly wage, your mileage rate and unit (km or mi), invoice prefix/numbering, and payment terms. These fields populate every invoice you generate.</p>
+
+      <div class="hc-steps">
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">1</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">+ Log Hours</div><div class="hc-step-desc">Enter a date, the hours worked, and an optional note. Each entry shows as "Unbilled" until it's invoiced.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">2</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">+ Log Mileage</div><div class="hc-step-desc">Choose "Total distance driven" if you already know the number, or "Odometer readings" to enter before/after readings — Vestry subtracts them for you and keeps both readings on the record for your own mileage log.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">3</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">🧾 Generate Invoice</div><div class="hc-step-desc">Pick a range — This Week, Last Week, This Month, Last Month, or a Custom range. Vestry pulls every un-invoiced hour and mileage entry in that range and totals them at your configured rates.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">4</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">View, Print, or Save as PDF</div><div class="hc-step-desc">The invoice opens automatically. "Print / Save PDF" opens a clean printable copy in a new tab — use your browser's print dialog and choose "Save as PDF" if you need a file to send.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">5</div></div><div class="hc-step-body"><div class="hc-step-title">Mark as Paid</div><div class="hc-step-desc">Once the client pays, mark the invoice Paid. This creates an Income transaction dated today, using your configured category label, and it now counts in your dashboard totals and Trends.</div></div></div>
+      </div>
+
+      <div class="hc-warn"><span>⚠️</span><span><strong>Hours and mileage logged are not income until the invoice is marked Paid.</strong> An unpaid invoice does not affect your budget totals — this avoids counting money you haven't received yet.</span></div>
+      <div class="hc-tip"><span>💡</span><span>Marking an invoice Unpaid (or deleting it) reverses everything cleanly: the income transaction is removed and the underlying hours/mileage entries go back to "Unbilled" so you can re-invoice them.</span></div>
+      <p class="hc-p">The <strong>Overview</strong> dashboard shows a Contract Work snapshot — Hours YTD, Mileage YTD, Unbilled amount, and Paid YTD — so your contract income is visible alongside the rest of your budget without digging into the Work Hours page.</p>
+    </div>
+
+    <!-- 09 SHARING -->
+    <div class="hc-section" id="hs-share">
+      <div class="hc-num">09</div>
       <div class="hc-title">Sharing & Merge</div>
       <div class="hc-sub">How couples consolidate finances</div>
       <div class="hc-rule"></div>
@@ -2745,9 +3458,9 @@ document.addEventListener('keydown', function(e) {
       </div>
     </div>
 
-    <!-- 09 BACKUP -->
+    <!-- 10 BACKUP -->
     <div class="hc-section" id="hs-backup">
-      <div class="hc-num">09</div>
+      <div class="hc-num">10</div>
       <div class="hc-title">Backup & Restore</div>
       <div class="hc-sub">Protecting your data</div>
       <div class="hc-rule"></div>
@@ -2759,9 +3472,9 @@ document.addEventListener('keydown', function(e) {
       <div class="hc-tip"><span>💡</span><span>Back up at the end of each month. Name files clearly: <code>vestry_backup_2026-03.json</code></span></div>
     </div>
 
-    <!-- 10 CSV -->
+    <!-- 11 CSV -->
     <div class="hc-section" id="hs-csv">
-      <div class="hc-num">10</div>
+      <div class="hc-num">11</div>
       <div class="hc-title">Import & Export CSV</div>
       <div class="hc-sub">Moving data in bulk</div>
       <div class="hc-rule"></div>
@@ -2784,6 +3497,8 @@ document.addEventListener('keydown', function(e) {
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I reset Vestry and start fresh? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Open browser developer tools (F12 on desktop), go to Application → Local Storage, and delete entries starting with vestry_. Reload and the setup wizard appears again. Export a backup first!</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I run the setup wizard again? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Delete the localStorage key vestry_ob_done and reload. Your existing transactions and config are preserved — the wizard only writes to config fields.</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I change my currency symbol? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Config → Motivational Style section → Currency Symbol. Options: $, £, €, ₹. Updates everywhere in the app immediately.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">Why doesn't logging hours show up as income right away? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">By design. Hours and mileage are unbilled until you generate an invoice, and the invoice doesn't become income until you mark it Paid. This keeps your budget reflecting money actually received, not money you're owed.</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">Can I enter mileage as a start/end odometer reading instead of total distance? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Yes. In + Log Mileage, switch the mode to "Odometer readings" and enter before/after — Vestry calculates the distance for you and keeps both readings on file.</div></div></div>
       </div>
     </div>
 
