@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v1.6";
+  --version:   "v1.8";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -568,6 +568,66 @@ td.amt.one { color: var(--oneoff); }
 
 /* ── CONFIG PAGE ────────────────────────────────────────── */
 .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+.help-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 0.65rem;
+  font-weight: 800;
+  cursor: help;
+  margin-left: 6px;
+  position: relative;
+  user-select: none;
+}
+.help-badge:hover {
+  background-color: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+}
+.tooltip-content {
+  visibility: hidden;
+  width: 220px;
+  background-color: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: var(--shadow);
+  position: absolute;
+  z-index: 50;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: normal;
+  line-height: 1.35;
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.help-badge:hover .tooltip-content,
+.help-badge:focus-within .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--border) transparent transparent transparent;
+}
 .config-card {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -582,6 +642,34 @@ td.amt.one { color: var(--oneoff); }
   color: var(--text);
   margin-bottom: 4px;
 }
+.config-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 10px;
+}
+.config-card-header h3 { margin-bottom: 0; flex: 1; }
+.config-chevron {
+  color: var(--text3);
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  padding: 4px;
+}
+.config-card.collapsed .config-chevron { transform: rotate(-90deg); }
+.config-card-body {
+  margin-top: 14px;
+}
+.config-card.collapsed .config-card-body { display: none; }
+.config-card-summary {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.config-card.collapsed .config-card-summary { display: block; }
+.config-card:not(.collapsed) .config-card-summary { display: none; }
 .config-card .config-desc { font-size: 10px; color: var(--text3); margin-bottom: 16px; line-height: 1.5; }
 .config-form { display: flex; flex-direction: column; gap: 12px; }
 .budget-goal-row {
@@ -987,7 +1075,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v1.6</span>
+    <span class="logo-ver">v1.8</span>
   </div>
 
   <div class="topbar-actions">
@@ -1236,7 +1324,7 @@ td.amt.one { color: var(--oneoff); }
 
     <div class="sec-hdr"><div class="sec-title">Mileage Log</div></div>
     <div class="tbl-wrap">
-      <table><thead><tr><th>Date</th><th>Distance</th><th>Odometer</th><th>Note</th><th>Status</th><th></th></tr></thead>
+      <table><thead><tr><th>Date</th><th>Distance</th><th>Odometer</th><th>Rate</th><th>Note</th><th>Status</th><th></th></tr></thead>
       <tbody id="wh-mileage-body"></tbody></table>
     </div>
   </div>
@@ -1245,8 +1333,13 @@ td.amt.one { color: var(--oneoff); }
     <div class="sec-hdr"><div class="sec-title">Configuration <span class="sec-tag">personalise your budget</span></div></div>
     <div class="config-grid">
 
-      <div class="config-card">
-        <h3>Family & Person</h3>
+      <div class="config-card collapsed">
+        <div class="config-card-header" onclick="toggleConfigCard(this)">
+          <h3>Family & Person<span class="help-badge">?<span class="tooltip-content">Household/personal name shown on exports and merge tags.</span></span></h3>
+          <span class="config-chevron">▾</span>
+        </div>
+        <div class="config-card-summary">Household name, your name, default owner tag for exports.</div>
+        <div class="config-card-body">
         <p class="config-desc">Set your family/household name and your personal name. This appears on exports and helps with merge tagging.</p>
         <div class="config-form">
           <div class="field"><label>Family / Household Name</label><input type="text" id="cfg-family" placeholder="e.g. The Griffith Family"></div>
@@ -1254,10 +1347,16 @@ td.amt.one { color: var(--oneoff); }
           <div class="field"><label>Default Owner Tag (used on Share exports)</label><input type="text" id="cfg-owner-tag" placeholder="e.g. Anita, Joint"></div>
           <button class="btn btn-primary" onclick="saveConfig()">Save</button>
         </div>
+        </div>
       </div>
 
-      <div class="config-card">
-        <h3>Monthly Budget Targets</h3>
+      <div class="config-card collapsed">
+        <div class="config-card-header" onclick="toggleConfigCard(this)">
+          <h3>Monthly Budget Targets<span class="help-badge">?<span class="tooltip-content">Drives the progress bars on your dashboard overview.</span></span></h3>
+          <span class="config-chevron">▾</span>
+        </div>
+        <div class="config-card-summary">Income target, expense limit, savings target.</div>
+        <div class="config-card-body">
         <p class="config-desc">Set spending limits and income targets. Progress bars on your dashboard will show how you're tracking against them.</p>
         <div class="config-form">
           <div class="field"><label>Monthly Income Target ($)</label><input type="number" id="cfg-income-target" placeholder="e.g. 6000" min="0"></div>
@@ -1265,10 +1364,16 @@ td.amt.one { color: var(--oneoff); }
           <div class="field"><label>Monthly Savings Target ($)</label><input type="number" id="cfg-savings-target" placeholder="e.g. 800" min="0"></div>
           <button class="btn btn-primary" onclick="saveConfig()">Save</button>
         </div>
+        </div>
       </div>
 
-      <div class="config-card">
-        <h3>Budget Goals & Intentions</h3>
+      <div class="config-card collapsed">
+        <div class="config-card-header" onclick="toggleConfigCard(this)">
+          <h3>Budget Goals & Intentions<span class="help-badge">?<span class="tooltip-content">Shown as motivational reminders on your dashboard.</span></span></h3>
+          <span class="config-chevron">▾</span>
+        </div>
+        <div class="config-card-summary">Add goals like "Pay off car by Dec" with a category.</div>
+        <div class="config-card-body">
         <p class="config-desc">What are you working toward? These show as motivational reminders on your dashboard. Add as many as you like.</p>
         <div class="budget-goals-list" id="bg-list"></div>
         <div class="form-grid-2" style="margin-bottom:8px">
@@ -1281,10 +1386,16 @@ td.amt.one { color: var(--oneoff); }
           </div>
         </div>
         <button class="btn" onclick="addBudgetGoal()">+ Add Intention</button>
+        </div>
       </div>
 
-      <div class="config-card">
-        <h3>Motivational Style</h3>
+      <div class="config-card collapsed">
+        <div class="config-card-header" onclick="toggleConfigCard(this)">
+          <h3>Motivational Style<span class="help-badge">?<span class="tooltip-content">Changes the tone of dashboard messages and score feedback.</span></span></h3>
+          <span class="config-chevron">▾</span>
+        </div>
+        <div class="config-card-summary">Message tone (gentle/coach/data) and currency symbol.</div>
+        <div class="config-card-body">
         <p class="config-desc">Choose how the dashboard speaks to you. Affects the tone of daily messages and score feedback.</p>
         <div class="config-form">
           <div class="field"><label>Dashboard Message Style</label>
@@ -1304,10 +1415,16 @@ td.amt.one { color: var(--oneoff); }
           </div>
           <button class="btn btn-primary" onclick="saveConfig()">Save</button>
         </div>
+        </div>
       </div>
 
-      <div class="config-card">
-        <h3>Contract Work & Invoicing</h3>
+      <div class="config-card collapsed">
+        <div class="config-card-header" onclick="toggleConfigCard(this)">
+          <h3>Contract Work & Invoicing<span class="help-badge">?<span class="tooltip-content">Your mileage rate isn't set directly — it's calculated from the fuel price and fuel economy fields further down this card.</span></span></h3>
+          <span class="config-chevron">▾</span>
+        </div>
+        <div class="config-card-summary">Business/client info, hourly wage, fuel price & economy, invoice numbering.</div>
+        <div class="config-card-body">
         <p class="config-desc">Used to generate invoices from your logged hours and to label the income they create. The next invoice number auto-increments each time you generate one.</p>
         <div class="config-form">
           <div class="field"><label>Your Name / Business Name (appears as "From")</label><input type="text" id="cfg-inv-name" placeholder="e.g. Chris Roper"></div>
@@ -1323,20 +1440,23 @@ td.amt.one { color: var(--oneoff); }
           </div>
           <div class="field"><label>Payment Terms</label><input type="text" id="cfg-inv-terms" placeholder="e.g. Due upon receipt / Net 15"></div>
           <div class="form-grid-2">
-            <div class="field"><label>Mileage Rate ($ per unit)</label><input type="number" id="cfg-inv-mileage-rate" min="0" step="0.01" placeholder="e.g. 0.68"></div>
-            <div class="field"><label>Distance Unit</label>
-              <select id="cfg-inv-mileage-unit"><option value="km">Kilometers (km)</option><option value="mi">Miles (mi)</option></select>
-            </div>
+            <div class="field"><label>Fuel Price ($ per Litre)<span class="help-badge">?<span class="tooltip-content">Your current gas price per litre. Update this whenever prices change — your mileage rate recalculates automatically.</span></span></label><input type="number" id="cfg-fuel-price" min="0" step="0.001" placeholder="e.g. 1.50" oninput="updateFuelRatePreview()"></div>
+            <div class="field"><label>Vehicle Fuel Economy (L/100km)<span class="help-badge">?<span class="tooltip-content">How many litres your vehicle uses per 100km — check your dashboard or owner's manual for this figure.</span></span></label><input type="number" id="cfg-fuel-economy" min="0" step="0.1" placeholder="e.g. 8.0" oninput="updateFuelRatePreview()"></div>
           </div>
+          <div class="field"><label>Distance Unit</label>
+            <select id="cfg-inv-mileage-unit" onchange="updateFuelRatePreview()"><option value="km">Kilometers (km)</option><option value="mi">Miles (mi)</option></select>
+          </div>
+          <div class="config-desc" id="cfg-fuel-rate-preview" style="margin-top:-4px">Mileage rate: —</div>
           <div class="field"><label>Income Category Label (for budget transactions)</label><input type="text" id="cfg-inv-cat" placeholder="e.g. Contract Income"></div>
           <button class="btn btn-primary" onclick="saveConfig()">Save</button>
+        </div>
         </div>
       </div>
 
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v1.6</div>
+</div></div><div class="version-mark">Vestry v1.8</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1452,6 +1572,9 @@ td.amt.one { color: var(--oneoff); }
         <div class="field"><label>Odometer After</label><input type="number" id="ml-odo-end" min="0" step="0.1" oninput="recalcMileageDistance()"></div>
       </div>
       <div id="ml-odo-calc" style="display:none;font-size:11px;color:var(--text3)"></div>
+      <div class="field"><label>Rate ($ per <span id="ml-unit-lbl-2">km</span>)<span class="help-badge">?<span class="tooltip-content">Snapshotted from your Config fuel price when you log the trip, so later price changes don't retroactively reprice it. Edit it here if needed.</span></span></label>
+        <input type="number" id="ml-rate" min="0" step="0.001">
+      </div>
       <div class="field"><label>Note / Destination (optional)</label><input type="text" id="ml-note" placeholder="e.g. client site visit"></div>
     </div>
     <div class="btns">
@@ -1555,7 +1678,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v1.6';
+var APP_VERSION = 'v1.8';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -1586,6 +1709,8 @@ var STATE = {
     invNext:         1,
     invTerms:        'Due upon receipt',
     invCat:          'Contract Income',
+    fuelPricePerL:   0,
+    fuelEconomyL100km: 0,
     mileageRate:     0,
     mileageUnit:     'km'
   },
@@ -1931,6 +2056,7 @@ function openMileageModal(editId) {
   document.getElementById('ml-id').value = editId || '';
   document.getElementById('modal-title-mileage').textContent = editId ? 'Edit Mileage' : 'Log Mileage';
   document.getElementById('ml-unit-lbl-1').textContent = distUnit();
+  document.getElementById('ml-unit-lbl-2').textContent = distUnit();
   if (editId) {
     var m = STATE.mileage.find(function(x){ return x.id == editId; });
     if (m) {
@@ -1939,6 +2065,7 @@ function openMileageModal(editId) {
       document.getElementById('ml-distance').value = m.distance;
       document.getElementById('ml-odo-start').value = m.odoStart != null ? m.odoStart : '';
       document.getElementById('ml-odo-end').value   = m.odoEnd != null ? m.odoEnd : '';
+      document.getElementById('ml-rate').value     = (m.rate != null ? m.rate : (STATE.config.mileageRate || 0));
       document.getElementById('ml-note').value     = m.note || '';
     }
   } else {
@@ -1948,6 +2075,7 @@ function openMileageModal(editId) {
     document.getElementById('ml-distance').value = '';
     document.getElementById('ml-odo-start').value = '';
     document.getElementById('ml-odo-end').value   = '';
+    document.getElementById('ml-rate').value     = STATE.config.mileageRate || 0;
     document.getElementById('ml-note').value     = '';
   }
   onMileageModeChange();
@@ -1979,6 +2107,8 @@ function saveMileage() {
   var distance = parseFloat(document.getElementById('ml-distance').value);
   var odoStart = document.getElementById('ml-odo-start').value === '' ? null : parseFloat(document.getElementById('ml-odo-start').value);
   var odoEnd   = document.getElementById('ml-odo-end').value === ''   ? null : parseFloat(document.getElementById('ml-odo-end').value);
+  var rate   = parseFloat(document.getElementById('ml-rate').value);
+  if (isNaN(rate) || rate < 0) rate = STATE.config.mileageRate || 0;
   var note   = document.getElementById('ml-note').value.trim();
 
   if (mode === 'odometer') {
@@ -1991,10 +2121,10 @@ function saveMileage() {
     var idx = STATE.mileage.findIndex(function(m){ return m.id == editId; });
     if (idx > -1) {
       var existing = STATE.mileage[idx];
-      STATE.mileage[idx] = { id: parseFloat(editId), date, mode, distance, odoStart, odoEnd, note, invoiceId: existing.invoiceId || null };
+      STATE.mileage[idx] = { id: parseFloat(editId), date, mode, distance, odoStart, odoEnd, rate, note, invoiceId: existing.invoiceId || null };
     }
   } else {
-    STATE.mileage.push({ id: Date.now(), date, mode, distance, odoStart, odoEnd, note, invoiceId: null });
+    STATE.mileage.push({ id: Date.now(), date, mode, distance, odoStart, odoEnd, rate, note, invoiceId: null });
   }
   STATE.mileage.sort(function(a,b){ return b.date.localeCompare(a.date); });
 
@@ -2041,6 +2171,12 @@ function entriesInRange(list, from, to) {
 }
 function sumHours(list) { return list.reduce(function(s,w){ return s + w.hours; }, 0); }
 function sumDist(list) { return list.reduce(function(s,m){ return s + m.distance; }, 0); }
+function sumDistCost(list) {
+  return list.reduce(function(s,m){
+    var r = (m.rate != null) ? m.rate : (STATE.config.mileageRate || 0);
+    return s + m.distance * r;
+  }, 0);
+}
 
 function renderWorkHoursPage() {
   var c = STATE.config;
@@ -2064,14 +2200,14 @@ function renderWorkHoursPage() {
   document.getElementById('wh-month-hrs').textContent = monthHrs.toFixed(1) + ' hrs';
   document.getElementById('wh-month-amt').textContent = fmt(monthHrs * wage);
   document.getElementById('wh-unbilled-hrs').textContent = unbilledHrs.toFixed(1) + ' hrs';
-  document.getElementById('wh-unbilled-amt').textContent = fmt(unbilledHrs * wage + unbilledDist * mRate);
+  document.getElementById('wh-unbilled-amt').textContent = fmt(unbilledHrs * wage + sumDistCost(unbilledEntries(STATE.mileage)));
 
   document.getElementById('wh-week-dist').textContent  = weekDist.toFixed(1) + ' ' + unit;
-  document.getElementById('wh-week-dist-amt').textContent  = fmt(weekDist * mRate);
+  document.getElementById('wh-week-dist-amt').textContent  = fmt(sumDistCost(entriesInRange(STATE.mileage, wk[0], wk[1])));
   document.getElementById('wh-month-dist').textContent = monthDist.toFixed(1) + ' ' + unit;
-  document.getElementById('wh-month-dist-amt').textContent = fmt(monthDist * mRate);
+  document.getElementById('wh-month-dist-amt').textContent = fmt(sumDistCost(entriesInRange(STATE.mileage, mo[0], mo[1])));
   document.getElementById('wh-unbilled-dist').textContent = unbilledDist.toFixed(1) + ' ' + unit;
-  document.getElementById('wh-unbilled-dist-amt').textContent = fmt(unbilledDist * mRate);
+  document.getElementById('wh-unbilled-dist-amt').textContent = fmt(sumDistCost(unbilledEntries(STATE.mileage)));
   document.getElementById('wh-dist-ytd').textContent = ytdDist.toFixed(1);
   document.getElementById('wh-dist-ytd-unit').textContent = unit + ', all entries';
 
@@ -2118,16 +2254,18 @@ function renderWorkHoursPage() {
   document.getElementById('wh-hours-body').innerHTML = hrsHtml;
 
   var mlHtml = STATE.mileage.length === 0
-    ? '<tr class="empty-row"><td colspan="6">No mileage logged yet — click "+ Log Mileage" to start.</td></tr>'
+    ? '<tr class="empty-row"><td colspan="7">No mileage logged yet — click "+ Log Mileage" to start.</td></tr>'
     : STATE.mileage.map(function(m){
         var statusPill = m.invoiceId
           ? '<span class="pill pill-savings">Invoiced</span>'
           : '<span class="pill pill-oneoff">Unbilled</span>';
         var odoCell = (m.odoStart != null && m.odoEnd != null) ? (m.odoStart.toFixed(1) + ' → ' + m.odoEnd.toFixed(1)) : '—';
+        var rate = (m.rate != null ? m.rate : (STATE.config.mileageRate || 0));
         return '<tr>' +
           '<td>' + esc(m.date) + '</td>' +
           '<td>' + m.distance.toFixed(1) + ' ' + unit + '</td>' +
           '<td style="color:var(--text3)">' + odoCell + '</td>' +
+          '<td style="color:var(--text3)">' + fmt(rate) + '/' + unit + '<br><span style="font-size:10px">= ' + fmt(rate * m.distance) + '</span></td>' +
           '<td style="color:var(--text3)">' + esc(m.note || '') + '</td>' +
           '<td>' + statusPill + '</td>' +
           '<td><div style="display:flex;gap:4px;justify-content:flex-end">' +
@@ -2162,8 +2300,9 @@ function updateInvoiceGenPreview() {
   var matchedDist = entriesInRange(unbilledEntries(STATE.mileage), from, to);
   var hrs = sumHours(matchedHrs);
   var dist = sumDist(matchedDist);
+  var distCost = sumDistCost(matchedDist);
   var wage = STATE.config.invWage || 0;
-  var mRate = STATE.config.mileageRate || 0;
+  var avgRate = dist > 0 ? (distCost / dist) : 0;
   var unit = distUnit();
   if (matchedHrs.length === 0 && matchedDist.length === 0) {
     prev.innerHTML = 'No un-invoiced hours or mileage found in this range.';
@@ -2172,13 +2311,14 @@ function updateInvoiceGenPreview() {
   }
   var lines = [];
   if (matchedHrs.length > 0) lines.push(matchedHrs.length + ' day(s) · <strong>' + hrs.toFixed(2) + ' hrs</strong> × ' + fmt(wage) + '/hr = <strong>' + fmt(hrs * wage) + '</strong>');
-  if (matchedDist.length > 0) lines.push(matchedDist.length + ' trip(s) · <strong>' + dist.toFixed(1) + ' ' + unit + '</strong> × ' + fmt(mRate) + '/' + unit + ' = <strong>' + fmt(dist * mRate) + '</strong>');
-  var total = hrs * wage + dist * mRate;
+  if (matchedDist.length > 0) lines.push(matchedDist.length + ' trip(s) · <strong>' + dist.toFixed(1) + ' ' + unit + '</strong> at each trip\'s logged rate (avg ' + fmt(avgRate) + '/' + unit + ') = <strong>' + fmt(distCost) + '</strong>');
+  var total = hrs * wage + distCost;
+  var zeroRateTrips = matchedDist.filter(function(m){ return (m.rate != null ? m.rate : (STATE.config.mileageRate||0)) === 0; });
   var warn = '';
   if (matchedHrs.length > 0 && wage === 0) warn += '<br><span style="color:var(--expense)">⚠ Set your hourly wage in Config.</span>';
-  if (matchedDist.length > 0 && mRate === 0) warn += '<br><span style="color:var(--expense)">⚠ Set your mileage rate in Config.</span>';
+  if (zeroRateTrips.length > 0) warn += '<br><span style="color:var(--expense)">⚠ ' + zeroRateTrips.length + ' trip(s) have a $0 rate — edit them in the Mileage Log.</span>';
   prev.innerHTML = lines.join('<br>') + '<br>Total: <strong>' + fmt(total) + '</strong>' + warn;
-  var blocked = (matchedHrs.length > 0 && wage === 0) || (matchedDist.length > 0 && mRate === 0);
+  var blocked = (matchedHrs.length > 0 && wage === 0) || zeroRateTrips.length > 0;
   btn.disabled = blocked; btn.style.opacity = blocked ? .4 : 1;
 }
 function generateInvoice() {
@@ -2187,12 +2327,14 @@ function generateInvoice() {
   var matchedHrs = entriesInRange(unbilledEntries(STATE.workHours), from, to);
   var matchedDist = entriesInRange(unbilledEntries(STATE.mileage), from, to);
   var wage = STATE.config.invWage || 0;
-  var mRate = STATE.config.mileageRate || 0;
+  var distCost = sumDistCost(matchedDist);
+  var zeroRateTrips = matchedDist.filter(function(m){ return (m.rate != null ? m.rate : (STATE.config.mileageRate||0)) === 0; });
   if (matchedHrs.length === 0 && matchedDist.length === 0) return;
-  if ((matchedHrs.length > 0 && wage <= 0) || (matchedDist.length > 0 && mRate <= 0)) return;
+  if ((matchedHrs.length > 0 && wage <= 0) || zeroRateTrips.length > 0) return;
 
   var hrs = sumHours(matchedHrs);
   var dist = sumDist(matchedDist);
+  var avgRate = dist > 0 ? (distCost / dist) : 0;
   var c = STATE.config;
   var num = (c.invPrefix || 'INV-') + String(c.invNext || 1).padStart(4, '0');
   var unit = distUnit();
@@ -2205,15 +2347,15 @@ function generateInvoice() {
     contractorName: c.invName, contractorAddress: c.invAddress,
     companyName: c.invCompany, companyAddress: c.invCompanyAddress,
     hourlyWage: wage, totalHours: hrs,
-    mileageRate: mRate, mileageUnit: unit, totalDistance: dist,
-    totalAmount: hrs * wage + dist * mRate,
+    mileageRate: avgRate, mileageUnit: unit, totalDistance: dist,
+    totalAmount: hrs * wage + distCost,
     terms: c.invTerms, catLabel: c.invCat || 'Contract Income',
     status: 'unpaid', paidDate: null, transactionId: null,
     entryIds: matchedHrs.map(function(m){ return m.id; }),
     mileageEntryIds: matchedDist.map(function(m){ return m.id; }),
     lineItems: matchedHrs.map(function(m){ return { date: m.date, hours: m.hours, note: m.note || '' }; })
       .sort(function(a,b){ return a.date.localeCompare(b.date); }),
-    mileageLineItems: matchedDist.map(function(m){ return { date: m.date, distance: m.distance, note: m.note || '' }; })
+    mileageLineItems: matchedDist.map(function(m){ return { date: m.date, distance: m.distance, rate: (m.rate != null ? m.rate : (STATE.config.mileageRate||0)), note: m.note || '' }; })
       .sort(function(a,b){ return a.date.localeCompare(b.date); })
   };
 
@@ -2242,7 +2384,8 @@ function invoiceHTML(inv) {
     return '<tr><td>' + esc(li.date) + '</td><td>' + esc(li.note) + '</td><td style="text-align:right">' + li.hours.toFixed(2) + '</td></tr>';
   }).join('');
   var mileageRows = (inv.mileageLineItems || []).map(function(li){
-    return '<tr><td>' + esc(li.date) + '</td><td>' + esc(li.note) + '</td><td style="text-align:right">' + li.distance.toFixed(1) + ' ' + (inv.mileageUnit||'km') + '</td></tr>';
+    var r = li.rate != null ? li.rate : (inv.mileageRate || 0);
+    return '<tr><td>' + esc(li.date) + '</td><td>' + esc(li.note) + '</td><td style="text-align:right">' + li.distance.toFixed(1) + ' ' + (inv.mileageUnit||'km') + '</td><td style="text-align:right">' + fmt(r) + '</td><td style="text-align:right">' + fmt(r * li.distance) + '</td></tr>';
   }).join('');
   return '' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">' +
@@ -2262,12 +2405,12 @@ function invoiceHTML(inv) {
       '<tbody>' + rows + '</tbody></table>' : '') +
     (mileageRows ?
       '<table style="width:100%;border-collapse:collapse;margin-bottom:14px"><thead><tr style="border-bottom:1px solid var(--border)">' +
-      '<th style="text-align:left;padding:6px 0">Date</th><th style="text-align:left">Note</th><th style="text-align:right">Distance</th></tr></thead>' +
+      '<th style="text-align:left;padding:6px 0">Date</th><th style="text-align:left">Note</th><th style="text-align:right">Distance</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead>' +
       '<tbody>' + mileageRows + '</tbody></table>' : '') +
     '<div style="display:flex;justify-content:flex-end;gap:32px;border-top:1px solid var(--border);padding-top:10px">' +
       '<div style="text-align:right;font-size:11px;color:var(--text3)">' +
         (inv.totalHours > 0 ? 'Hours: ' + inv.totalHours.toFixed(2) + ' × ' + fmt(inv.hourlyWage) + '/hr = ' + fmt(inv.totalHours * inv.hourlyWage) + '<br>' : '') +
-        ((inv.totalDistance||0) > 0 ? 'Mileage: ' + inv.totalDistance.toFixed(1) + ' ' + (inv.mileageUnit||'km') + ' × ' + fmt(inv.mileageRate||0) + '/' + (inv.mileageUnit||'km') + ' = ' + fmt(inv.totalDistance * (inv.mileageRate||0)) : '') +
+        ((inv.totalDistance||0) > 0 ? 'Mileage: ' + inv.totalDistance.toFixed(1) + ' ' + (inv.mileageUnit||'km') + ' (avg ' + fmt(inv.mileageRate||0) + '/' + (inv.mileageUnit||'km') + ') = ' + fmt(inv.totalDistance * (inv.mileageRate||0)) : '') +
       '</div>' +
       '<div style="text-align:right;font-size:1.2rem;font-family:var(--serif)">Total Due<br><strong>' + fmt(inv.totalAmount) + '</strong></div>' +
     '</div>' +
@@ -2344,6 +2487,32 @@ function printInvoiceFromModal() {
   setTimeout(function(){ w.print(); }, 250);
 }
 
+// ── FUEL COST → MILEAGE RATE ────────────────────────────────
+// Derives $/km (or $/mi) from fuel price and vehicle economy, instead of
+// a manually-set flat rate, so it stays current as gas prices change.
+function computeFuelRate(fuelPrice, economyL100km, unit) {
+  var perKm = (economyL100km / 100) * fuelPrice;
+  return unit === 'mi' ? perKm * 1.60934 : perKm;
+}
+function updateFuelRatePreview() {
+  var price  = parseFloat(document.getElementById('cfg-fuel-price').value) || 0;
+  var econ   = parseFloat(document.getElementById('cfg-fuel-economy').value) || 0;
+  var unit   = document.getElementById('cfg-inv-mileage-unit').value || 'km';
+  var el     = document.getElementById('cfg-fuel-rate-preview');
+  if (!el) return;
+  if (price > 0 && econ > 0) {
+    var rate = computeFuelRate(price, econ, unit);
+    el.textContent = 'Mileage rate: ' + fmt(rate) + ' / ' + unit + ' (from ' + fmt(price) + '/L at ' + econ + ' L/100km)';
+  } else {
+    el.textContent = 'Mileage rate: — enter fuel price and economy above';
+  }
+}
+
+// ── COLLAPSIBLE CONFIG CARDS ─────────────────────────────────
+function toggleConfigCard(headerEl) {
+  headerEl.parentElement.classList.toggle('collapsed');
+}
+
 // ── CONFIG ───────────────────────────────────────────────────
 function saveConfig() {
   STATE.config.family        = document.getElementById('cfg-family').value.trim();
@@ -2363,8 +2532,10 @@ function saveConfig() {
   STATE.config.invNext            = parseInt(document.getElementById('cfg-inv-next').value) || 1;
   STATE.config.invTerms           = document.getElementById('cfg-inv-terms').value.trim();
   STATE.config.invCat             = document.getElementById('cfg-inv-cat').value.trim() || 'Contract Income';
-  STATE.config.mileageRate        = parseFloat(document.getElementById('cfg-inv-mileage-rate').value) || 0;
+  STATE.config.fuelPricePerL      = parseFloat(document.getElementById('cfg-fuel-price').value) || 0;
+  STATE.config.fuelEconomyL100km  = parseFloat(document.getElementById('cfg-fuel-economy').value) || 0;
   STATE.config.mileageUnit        = document.getElementById('cfg-inv-mileage-unit').value || 'km';
+  STATE.config.mileageRate        = computeFuelRate(STATE.config.fuelPricePerL, STATE.config.fuelEconomyL100km, STATE.config.mileageUnit);
   save();
   renderBranding();
   render();
@@ -2392,8 +2563,10 @@ function renderConfigPage() {
   document.getElementById('cfg-inv-next').value              = c.invNext || 1;
   document.getElementById('cfg-inv-terms').value             = c.invTerms || '';
   document.getElementById('cfg-inv-cat').value               = c.invCat || 'Contract Income';
-  document.getElementById('cfg-inv-mileage-rate').value       = c.mileageRate || '';
+  document.getElementById('cfg-fuel-price').value              = c.fuelPricePerL || '';
+  document.getElementById('cfg-fuel-economy').value            = c.fuelEconomyL100km || '';
   document.getElementById('cfg-inv-mileage-unit').value       = c.mileageUnit || 'km';
+  updateFuelRatePreview();
   renderBudgetGoalsList();
 }
 
@@ -2597,7 +2770,7 @@ function render() {
   var ytdStr = String(STATE.currentYear);
   var cwHrsYTD  = sumHours(STATE.workHours.filter(function(w){ return w.date.startsWith(ytdStr); }));
   var cwDistYTD = sumDist(STATE.mileage.filter(function(m){ return m.date.startsWith(ytdStr); }));
-  var cwUnbilled = sumHours(unbilledEntries(STATE.workHours)) * (c.invWage || 0) + sumDist(unbilledEntries(STATE.mileage)) * (c.mileageRate || 0);
+  var cwUnbilled = sumHours(unbilledEntries(STATE.workHours)) * (c.invWage || 0) + sumDistCost(unbilledEntries(STATE.mileage));
   var cwPaidYTD = STATE.invoices.filter(function(inv){ return inv.status === 'paid' && inv.paidDate && inv.paidDate.startsWith(ytdStr); })
     .reduce(function(s,inv){ return s + inv.totalAmount; }, 0);
   var ovCwHrs = document.getElementById('ov-cw-hrs');
@@ -3428,7 +3601,7 @@ document.addEventListener('keydown', function(e) {
       <div class="hc-rule"></div>
       <p class="hc-p">The <strong>Work Hours</strong> page (sidebar) is a separate ledger for hours and mileage you plan to invoice a client or employer for. It stays separate from your household budget until you mark an invoice <strong>Paid</strong> — at that point it becomes a real Income transaction automatically.</p>
 
-      <p class="hc-p"><strong>Step 1 — Set up Config first.</strong> Go to Config → Contract Work & Invoicing and fill in your name, your client's name, your hourly wage, your mileage rate and unit (km or mi), invoice prefix/numbering, and payment terms. These fields populate every invoice you generate.</p>
+      <p class="hc-p"><strong>Step 1 — Set up Config first.</strong> Go to Config → Contract Work & Invoicing and fill in your name, your client's name, your hourly wage, your fuel price per litre and vehicle fuel economy (L/100km) — Vestry works out your mileage rate from these automatically, so it stays current as gas prices change — plus your distance unit (km or mi), invoice prefix/numbering, and payment terms. These fields populate every invoice you generate.</p>
 
       <div class="hc-steps">
         <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">1</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">+ Log Hours</div><div class="hc-step-desc">Enter a date, the hours worked, and an optional note. Each entry shows as "Unbilled" until it's invoiced.</div></div></div>
