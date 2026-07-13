@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v1.8";
+  --version:   "v2.0";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -713,6 +713,19 @@ td.amt.one { color: var(--oneoff); }
 .modal .form-col { display: flex; flex-direction: column; gap: 12px; }
 .modal .btns { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
 
+/* ── TOAST ──────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: var(--bg2); color: var(--text); border: 1px solid var(--border);
+  padding: 10px 18px; border-radius: var(--r); font-size: 13px; font-family: var(--font);
+  box-shadow: 0 4px 20px rgba(0,0,0,.15); z-index: 9999; pointer-events: none;
+  opacity: 0; transition: opacity .2s ease, transform .2s ease; white-space: nowrap;
+  max-width: calc(100vw - 40px); text-overflow: ellipsis; overflow: hidden;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.toast-error { border-color: var(--expense); color: var(--expense); }
+#toast.toast-ok { border-color: var(--income); color: var(--income); }
+
 /* ── SCROLLBAR ──────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -721,6 +734,7 @@ td.amt.one { color: var(--oneoff); }
 /* ── MOBILE ─────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; grid-template-areas: "topbar" "main"; height: auto; min-height: 100vh; overflow: visible; }
+  .topbar { position: sticky; top: 0; z-index: 50; }
   .sidebar { display: none; }
   .main { padding: 14px; overflow: visible; }
   .summary-row { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -1075,7 +1089,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v1.8</span>
+    <span class="logo-ver">v2.0</span>
   </div>
 
   <div class="topbar-actions">
@@ -1324,7 +1338,7 @@ td.amt.one { color: var(--oneoff); }
 
     <div class="sec-hdr"><div class="sec-title">Mileage Log</div></div>
     <div class="tbl-wrap">
-      <table><thead><tr><th>Date</th><th>Distance</th><th>Odometer</th><th>Rate</th><th>Note</th><th>Status</th><th></th></tr></thead>
+      <table><thead><tr><th>Date</th><th>Distance</th><th>Odometer</th><th>Rate</th><th style="text-align:right">Cost</th><th>Note</th><th>Status</th><th></th></tr></thead>
       <tbody id="wh-mileage-body"></tbody></table>
     </div>
   </div>
@@ -1456,7 +1470,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v1.8</div>
+</div></div><div class="version-mark">Vestry v2.0</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1678,7 +1692,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v1.8';
+var APP_VERSION = 'v2.0';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -2045,7 +2059,7 @@ function saveWorkHour() {
 }
 function deleteWorkHour(id) {
   var w = STATE.workHours.find(function(x){ return x.id === id; });
-  if (w && w.invoiceId) { alert('This entry is already on an invoice. Delete the invoice first if you need to remove it.'); return; }
+  if (w && w.invoiceId) { toast('This entry is already on an invoice. Delete the invoice first if you need to remove it.', 'error'); return; }
   STATE.workHours = STATE.workHours.filter(function(x){ return x.id !== id; });
   save(); renderWorkHoursPage();
 }
@@ -2132,7 +2146,7 @@ function saveMileage() {
 }
 function deleteMileage(id) {
   var m = STATE.mileage.find(function(x){ return x.id === id; });
-  if (m && m.invoiceId) { alert('This entry is already on an invoice. Delete the invoice first if you need to remove it.'); return; }
+  if (m && m.invoiceId) { toast('This entry is already on an invoice. Delete the invoice first if you need to remove it.', 'error'); return; }
   STATE.mileage = STATE.mileage.filter(function(x){ return x.id !== id; });
   save(); renderWorkHoursPage();
 }
@@ -2254,18 +2268,20 @@ function renderWorkHoursPage() {
   document.getElementById('wh-hours-body').innerHTML = hrsHtml;
 
   var mlHtml = STATE.mileage.length === 0
-    ? '<tr class="empty-row"><td colspan="7">No mileage logged yet — click "+ Log Mileage" to start.</td></tr>'
+    ? '<tr class="empty-row"><td colspan="8">No mileage logged yet — click "+ Log Mileage" to start.</td></tr>'
     : STATE.mileage.map(function(m){
         var statusPill = m.invoiceId
           ? '<span class="pill pill-savings">Invoiced</span>'
           : '<span class="pill pill-oneoff">Unbilled</span>';
         var odoCell = (m.odoStart != null && m.odoEnd != null) ? (m.odoStart.toFixed(1) + ' → ' + m.odoEnd.toFixed(1)) : '—';
         var rate = (m.rate != null ? m.rate : (STATE.config.mileageRate || 0));
+        var cost = rate * m.distance;
         return '<tr>' +
           '<td>' + esc(m.date) + '</td>' +
           '<td>' + m.distance.toFixed(1) + ' ' + unit + '</td>' +
           '<td style="color:var(--text3)">' + odoCell + '</td>' +
-          '<td style="color:var(--text3)">' + fmt(rate) + '/' + unit + '<br><span style="font-size:10px">= ' + fmt(rate * m.distance) + '</span></td>' +
+          '<td style="color:var(--text3)">' + fmt(rate) + '/' + unit + '</td>' +
+          '<td style="text-align:right;color:var(--expense)">' + fmt(cost) + '</td>' +
           '<td style="color:var(--text3)">' + esc(m.note || '') + '</td>' +
           '<td>' + statusPill + '</td>' +
           '<td><div style="display:flex;gap:4px;justify-content:flex-end">' +
@@ -2960,7 +2976,7 @@ function importPaste() {
   });
   STATE.transactions.sort(function(a,b){ return b.date.localeCompare(a.date); });
   save(); document.getElementById('csv-paste').value=''; render();
-  if (added) alert(added + ' transactions imported.');
+  if (added) toast(added + ' transactions imported.', 'ok');
 }
 function importCSV() { document.getElementById('csv-file-input').click(); }
 function handleCSVFile(e) {
@@ -2978,7 +2994,7 @@ function handleCSVFile(e) {
       added++;
     }
     STATE.transactions.sort(function(a,b){return b.date.localeCompare(a.date);});
-    save(); render(); alert(added+' transactions imported.'); e.target.value='';
+    save(); render(); toast(added+' transactions imported.', 'ok'); e.target.value='';
   };
   reader.readAsText(file);
 }
@@ -3004,14 +3020,14 @@ function importBackup(e) {
   reader.onload=function(ev){
     try {
       var data=JSON.parse(ev.target.result);
-      if (!data.transactions||!data.recurring||!data.goals){alert('Invalid backup.');return;}
+      if (!data.transactions||!data.recurring||!data.goals){toast('Invalid backup file.','error');return;}
       if (!confirm('Replace ALL current data with this backup?')) return;
       STATE.transactions=data.transactions||[];
       STATE.recurring=data.recurring||[];
       STATE.goals=data.goals||[];
       if (data.config) Object.assign(STATE.config,data.config);
-      save(); renderBranding(); render(); alert('Backup restored — '+STATE.transactions.length+' transactions.');
-    } catch(err){alert('Could not read backup: '+err.message);}
+      save(); renderBranding(); render(); toast('Backup restored — '+STATE.transactions.length+' transactions.', 'ok');
+    } catch(err){toast('Could not read backup: '+err.message, 'error');}
   };
   reader.readAsText(file); e.target.value='';
 }
@@ -3043,9 +3059,9 @@ function doShareExport() {
   var to=document.getElementById('share-to').value;
   var owner=document.getElementById('share-owner').value.trim()||'shared';
   var fmt2=document.getElementById('share-fmt').value;
-  if (!from||!to){alert('Set a date range.');return;}
+  if (!from||!to){toast('Set a date range.','error');return;}
   var filtered=STATE.transactions.filter(function(t){return t.date>=from&&t.date<=to;});
-  if (!filtered.length){alert('No transactions in that range.');return;}
+  if (!filtered.length){toast('No transactions in that range.','error');return;}
   var tagged=filtered.map(function(t){return Object.assign({},t,{owner:t.owner||owner});});
   var a=document.createElement('a');
   var safe=owner.replace(/[^a-z0-9]/gi,'_').toLowerCase();
@@ -3080,7 +3096,7 @@ function previewMerge(e) {
   reader.onload=function(ev){
     try {
       var data=JSON.parse(ev.target.result);
-      if (!data.transactions){alert('Invalid backup.');return;}
+      if (!data.transactions){toast('Invalid backup file.','error');return;}
       _mergeData=data;
       var incoming=data.transactions||[];
       var dupes=0,newCount=0;
@@ -3098,7 +3114,7 @@ function previewMerge(e) {
         '<span style="color:var(--text3)">⟳ Dupes skipped: '+dupes+'</span>';
       document.getElementById('merge-confirm-btn').disabled=false;
       document.getElementById('merge-confirm-btn').style.opacity='1';
-    } catch(err){alert('Could not read file: '+err.message);}
+    } catch(err){toast('Could not read file: '+err.message,'error');}
   };
   reader.readAsText(file); e.target.value='';
 }
@@ -3116,7 +3132,7 @@ function doMerge() {
   });
   STATE.transactions.sort(function(a,b){return b.date.localeCompare(a.date);});
   save(); closeModal('merge'); render(); _mergeData=null;
-  alert(added+' transactions merged from '+owner+'.');
+  toast(added+' transactions merged from '+owner+'.', 'ok');
 }
 
 
@@ -3298,6 +3314,27 @@ updateMonthLabel();
 renderBranding();
 render();
 maybeShowOnboarding();
+
+// Toast notification (replaces alert())
+var _toastTimer = null;
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'show' + (type === 'error' ? ' toast-error' : type === 'ok' ? ' toast-ok' : '');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { el.className = ''; }, 3200);
+}
+
+// Close any modal when clicking the backdrop (outside the modal card)
+document.querySelectorAll('.modal-bg').forEach(function(bg) {
+  bg.addEventListener('click', function(e) {
+    if (e.target === bg) {
+      var id = bg.id.replace('modal-', '');
+      closeModal(id);
+    }
+  });
+});
 </script>
 
 <div id="ob-backdrop" class="ob-backdrop" style="display:none">
@@ -3680,6 +3717,8 @@ document.addEventListener('keydown', function(e) {
 
 <!-- Floating help button -->
 <button class="help-fab" id="help-fab" onclick="openHelp()" title="User Guide">?</button>
+
+<div id="toast"></div>
 
 </body>
 </html>
