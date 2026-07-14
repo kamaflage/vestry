@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.1";
+  --version:   "v2.2";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1089,7 +1089,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.1</span>
+    <span class="logo-ver">v2.2</span>
   </div>
 
   <div class="topbar-actions">
@@ -1489,7 +1489,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v2.1</div>
+</div></div><div class="version-mark">Vestry v2.2</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1728,7 +1728,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.1';
+var APP_VERSION = 'v2.2';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -3178,7 +3178,7 @@ function exportCSV() {
 // ── BACKUP / RESTORE ─────────────────────────────────────────
 function exportBackup() {
   var d = new Date().toISOString().split('T')[0];
-  var payload = { version: APP_VERSION, exported: new Date().toISOString(), transactions: STATE.transactions, recurring: STATE.recurring, goals: STATE.goals, config: STATE.config };
+  var payload = { version: APP_VERSION, exported: new Date().toISOString(), transactions: STATE.transactions, recurring: STATE.recurring, goals: STATE.goals, config: STATE.config, workHours: STATE.workHours, mileage: STATE.mileage, expenses: STATE.expenses, invoices: STATE.invoices };
   var a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   a.download='vestry_backup_'+d+'.json'; a.click();
@@ -3194,6 +3194,10 @@ function importBackup(e) {
       STATE.transactions=data.transactions||[];
       STATE.recurring=data.recurring||[];
       STATE.goals=data.goals||[];
+      STATE.workHours=data.workHours||[];
+      STATE.mileage=data.mileage||[];
+      STATE.expenses=data.expenses||[];
+      STATE.invoices=data.invoices||[];
       if (data.config) Object.assign(STATE.config,data.config);
       save(); renderBranding(); render(); toast('Backup restored — '+STATE.transactions.length+' transactions.', 'ok');
     } catch(err){toast('Could not read backup: '+err.message, 'error');}
