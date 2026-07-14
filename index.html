@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.4";
+  --version:   "v2.5";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1106,7 +1106,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.4</span>
+    <span class="logo-ver">v2.5</span>
   </div>
 
   <div class="topbar-actions">
@@ -1534,7 +1534,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v2.4</div>
+</div></div><div class="version-mark">Vestry v2.5</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1783,7 +1783,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.4';
+var APP_VERSION = 'v2.5';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -3661,21 +3661,23 @@ function openCardDetail(type) {
 
   else if (type === 'cw-unbilled') {
     var uHrs = unbilledEntries(STATE.workHours), uMi = unbilledEntries(STATE.mileage), uEx = unbilledEntries(STATE.expenses||[]);
-    var wage = c.invWage||0, rate = c.mileageRate||0, unit = distUnit();
-    var hAmt = sumHours(uHrs)*wage, mAmt = sumDist(uMi)*rate, eAmt = sumExpenses(uEx);
+    var wage = c.invWage||0, unit = distUnit();
+    var mDist = sumDist(uMi), mAmt = sumDistCost(uMi), avgRate = mDist > 0 ? (mAmt/mDist) : 0;
+    var hAmt = sumHours(uHrs)*wage, eAmt = sumExpenses(uEx);
     title = 'Unbilled Work';
     html = '<p class="modal-sub">Hours, mileage and expenses logged but not yet on an invoice.</p>';
     html += '<div style="display:flex;flex-direction:column;gap:2px;margin:12px 0">';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Hours ('+sumHours(uHrs).toFixed(1)+' hrs @ '+fmt(wage)+'/hr)</span><span style="color:var(--savings)">'+fmt(hAmt)+'</span></div>';
-    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Mileage ('+sumDist(uMi).toFixed(1)+' '+unit+' @ '+fmt(rate)+'/'+unit+')</span><span style="color:var(--savings)">'+fmt(mAmt)+'</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Mileage ('+mDist.toFixed(1)+' '+unit+', avg '+fmt(avgRate)+'/'+unit+')</span><span style="color:var(--savings)">'+fmt(mAmt)+'</span></div>';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Expenses</span><span style="color:var(--savings)">'+fmt(eAmt)+'</span></div>';
     html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Total Unbilled</span><span style="color:var(--savings)">'+fmt(hAmt+mAmt+eAmt)+'</span></div></div>';
     html += '<button class="btn btn-primary" style="margin-top:4px" onclick="closeModal(\'carddetail\');showPage(\'workhours\')">Go to Work Hours →</button>';
   }
 
   else if (type === 'cw-paid') {
-    var paid = (STATE.invoices||[]).filter(function(inv){ return inv.status==='paid'; });
-    var ytdTotal = paid.reduce(function(s,inv){ return s+(inv.total||0); },0);
+    var ytdStr2 = String(STATE.currentYear);
+    var paid = (STATE.invoices||[]).filter(function(inv){ return inv.status==='paid' && inv.paidDate && inv.paidDate.startsWith(ytdStr2); });
+    var ytdTotal = paid.reduce(function(s,inv){ return s+(inv.totalAmount||0); },0);
     title = 'Paid Invoices YTD';
     html = '<p class="modal-sub">Invoices marked as paid this year — each created an income transaction automatically.</p>';
     if (!paid.length) { html += '<p style="color:var(--text3)">No paid invoices yet.</p>'; }
@@ -3683,8 +3685,8 @@ function openCardDetail(type) {
       html += '<div style="display:flex;flex-direction:column;gap:2px;margin:12px 0">';
       paid.slice().sort(function(a,b){ return b.id-a.id; }).forEach(function(inv){
         html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">';
-        html += '<span style="font-size:12px">'+esc(inv.id)+(inv.range?' <span style="color:var(--text3);font-size:10px">'+inv.range.from+' → '+inv.range.to+'</span>':'')+'</span>';
-        html += '<strong style="color:var(--income)">'+fmt(inv.total||0)+'</strong></div>';
+        html += '<span style="font-size:12px">'+esc(inv.number)+' <span style="color:var(--text3);font-size:10px">'+esc(inv.from)+' → '+esc(inv.to)+'</span></span>';
+        html += '<strong style="color:var(--income)">'+fmt(inv.totalAmount||0)+'</strong></div>';
       });
       html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Total Paid YTD</span><span style="color:var(--income)">'+fmt(ytdTotal)+'</span></div></div>';
     }

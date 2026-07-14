@@ -1,7 +1,7 @@
-// Vestry Service Worker v2.4
+// Vestry Service Worker v2.5
 // Caches the app shell for full offline use.
 
-const CACHE = 'vestry-v2.4';
+const CACHE = 'vestry-v2.5';
 
 const APP_SHELL = [
   './',
