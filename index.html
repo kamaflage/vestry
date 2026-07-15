@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.5";
+  --version:   "v2.8";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -76,7 +76,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
 /* ── SHELL ──────────────────────────────────────────────── */
 .shell {
   display: grid;
-  grid-template-columns: 232px 1fr;
+  grid-template-columns: 232px minmax(0,1fr);
   grid-template-rows: auto 1fr;
   grid-template-areas: "topbar topbar" "sidebar main";
   height: 100vh;
@@ -299,7 +299,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
 /* ── SUMMARY CARDS ──────────────────────────────────────── */
 .summary-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0,1fr));
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -357,6 +357,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
   box-shadow: var(--shadow);
 }
 .motiv-icon { font-size: 1.6rem; flex-shrink: 0; }
+.motiv-text { min-width: 0; flex: 1; }
 .motiv-title { font-family: var(--serif); font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 2px; }
 .motiv-body  { font-size: 11px; color: var(--text2); line-height: 1.5; }
 .motiv-badge {
@@ -377,6 +378,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
   justify-content: space-between;
   margin-bottom: 12px;
   gap: 8px;
+  flex-wrap: wrap;
 }
 .sec-title {
   font-family: var(--serif);
@@ -416,11 +418,13 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 22px;
   box-shadow: var(--shadow);
 }
-table { width: 100%; border-collapse: collapse; }
+table { width: 100%; min-width: max-content; border-collapse: collapse; }
 thead th {
   font-size: 8px;
   letter-spacing: 1.5px;
@@ -492,10 +496,10 @@ td.amt.one { color: var(--oneoff); }
 .bar-track { flex: 1; background: var(--bg3); border-radius: 3px; height: 7px; overflow: hidden; }
 .bar-fill  { height: 100%; border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1); }
 .bar-val   { width: 72px; font-size: 10px; color: var(--text2); text-align: right; flex-shrink: 0; }
-.chart-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.chart-two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; margin-bottom: 20px; }
 
 /* ── GOALS ──────────────────────────────────────────────── */
-.goals-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 22px; }
+.goals-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin-bottom: 22px; }
 .goal-card {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -513,7 +517,7 @@ td.amt.one { color: var(--oneoff); }
 .goal-monthly { font-size: 9px; color: var(--text3); text-align: right; }
 
 /* ── RECURRING ──────────────────────────────────────────── */
-.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+.rec-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; margin-bottom: 22px; }
 .rec-card {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -562,12 +566,12 @@ td.amt.one { color: var(--oneoff); }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); background: var(--bg2); }
 .field select option { background: var(--bg2); }
 .field textarea { resize: vertical; min-height: 60px; }
-.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form-grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
-.form-grid-5 { display: grid; grid-template-columns: 2fr 1fr 1.2fr 1.2fr auto; gap: 10px; align-items: end; }
+.form-grid-2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+.form-grid-3 { display: grid; grid-template-columns: 2fr minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+.form-grid-5 { display: grid; grid-template-columns: 2fr minmax(0,1fr) 1.2fr 1.2fr auto; gap: 10px; align-items: end; }
 
 /* ── CONFIG PAGE ────────────────────────────────────────── */
-.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+.config-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; margin-bottom: 22px; }
 .help-badge {
   display: inline-flex;
   align-items: center;
@@ -674,7 +678,7 @@ td.amt.one { color: var(--oneoff); }
 .config-form { display: flex; flex-direction: column; gap: 12px; }
 .budget-goal-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto;
   gap: 8px;
   align-items: end;
   padding: 8px 10px;
@@ -717,7 +721,7 @@ td.amt.one { color: var(--oneoff); }
 .wh-section { margin-bottom: 4px; }
 .wh-sec-hdr {
   display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer; margin-bottom: 12px; gap: 8px; user-select: none;
+  cursor: pointer; margin-bottom: 12px; gap: 8px; user-select: none; flex-wrap: wrap;
 }
 .wh-sec-hdr:hover .sec-title { opacity: 0.72; }
 .wh-chevron { color: var(--text3); font-size: 0.75rem; transition: transform 0.2s; flex-shrink: 0; padding: 4px; }
@@ -750,23 +754,23 @@ td.amt.one { color: var(--oneoff); }
 
 /* ── MOBILE ─────────────────────────────────────────────── */
 @media (max-width: 860px) {
-  .shell { grid-template-columns: 1fr; grid-template-areas: "topbar" "main"; height: auto; min-height: 100vh; overflow: visible; }
+  .shell { grid-template-columns: minmax(0,1fr); grid-template-areas: "topbar" "main"; height: auto; min-height: 100vh; overflow: visible; }
   .topbar { position: sticky; top: 0; z-index: 50; }
   .sidebar { display: none; }
   .main { padding: 14px; overflow: visible; }
-  .summary-row { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .chart-two { grid-template-columns: 1fr; }
-  .goals-grid { grid-template-columns: 1fr 1fr; }
-  .rec-grid { grid-template-columns: 1fr; }
-  .config-grid { grid-template-columns: 1fr; }
-  .form-grid-5 { grid-template-columns: 1fr 1fr; }
+  .summary-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+  .chart-two { grid-template-columns: minmax(0,1fr); }
+  .goals-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .rec-grid { grid-template-columns: minmax(0,1fr); }
+  .config-grid { grid-template-columns: minmax(0,1fr); }
+  .form-grid-5 { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
   .topbar-actions { display: none; }
   .mob-menu-btn { display: flex; }
   .scard-val { font-size: 1.4rem; }
 }
 @media (max-width: 480px) {
-  .summary-row { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .goals-grid { grid-template-columns: 1fr; }
+  .summary-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .goals-grid { grid-template-columns: minmax(0,1fr); }
   .scard { padding: 12px 14px; }
 }
 /* version watermark */
@@ -1021,7 +1025,7 @@ td.amt.one { color: var(--oneoff); }
   border-radius: var(--r); padding: 10px 14px;
   margin: 12px 0; font-size: 12px; color: var(--text2); line-height: 1.6;
 }
-.hc-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.hc-cards { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; margin: 14px 0; }
 .hc-card {
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: var(--r); padding: 12px 14px;
@@ -1093,7 +1097,7 @@ td.amt.one { color: var(--oneoff); }
 .hc-faq-a-inner { padding: 0 14px 12px; border-top: 1px solid var(--bg3); padding-top: 8px; }
 .hc-faq-item.open .hc-faq-a { max-height: 300px; }
 @media (max-width: 600px) {
-  .hc-cards { grid-template-columns: 1fr; }
+  .hc-cards { grid-template-columns: minmax(0,1fr); }
   .help-body { padding: 20px 16px 60px; }
 }
 
@@ -1106,7 +1110,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.5</span>
+    <span class="logo-ver">v2.8</span>
   </div>
 
   <div class="topbar-actions">
@@ -1195,7 +1199,7 @@ td.amt.one { color: var(--oneoff); }
 
     <div class="motiv-banner" id="motiv-banner" style="display:none">
       <div class="motiv-icon" id="motiv-icon">🌱</div>
-      <div>
+      <div class="motiv-text">
         <div class="motiv-title" id="motiv-title">Welcome</div>
         <div class="motiv-body"  id="motiv-body">Set up your config to personalise your dashboard.</div>
       </div>
@@ -1241,7 +1245,7 @@ td.amt.one { color: var(--oneoff); }
       <div class="sec-title">Contract Work <span class="sec-tag">hours & mileage</span></div>
       <button class="btn" onclick="showPage('workhours')">Open →</button>
     </div>
-    <div class="summary-row" style="grid-template-columns:repeat(4,1fr)">
+    <div class="summary-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       <div class="scard scard-clickable" onclick="openCardDetail('cw-hours')" title="Go to Work Hours"><div class="scard-lbl">Hours YTD</div><div class="scard-val" id="ov-cw-hrs" style="color:var(--gold)">0.0</div><div class="scard-sub">logged this year</div></div>
       <div class="scard scard-clickable" onclick="openCardDetail('cw-dist')" title="Go to Work Hours"><div class="scard-lbl">Mileage YTD</div><div class="scard-val" id="ov-cw-dist" style="color:var(--gold)">0.0</div><div class="scard-sub" id="ov-cw-dist-unit">km logged this year</div></div>
       <div class="scard scard-clickable" onclick="openCardDetail('cw-unbilled')" title="See unbilled breakdown"><div class="scard-lbl">Unbilled</div><div class="scard-val" id="ov-cw-unbilled" style="color:var(--savings)">$0.00</div><div class="scard-sub">not yet invoiced</div></div>
@@ -1287,7 +1291,7 @@ td.amt.one { color: var(--oneoff); }
       <div class="sec-title">Recurring Bills <span class="sec-tag">monthly obligations</span></div>
       <button class="btn btn-primary" onclick="openModal('recurring')">+ Add</button>
     </div>
-    <div class="summary-row" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:18px">
+    <div class="summary-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);margin-bottom:18px">
       <div class="scard" style="--c:var(--expense)"><div class="scard-lbl">Monthly Fixed</div><div class="scard-val" id="rec-total" style="color:var(--expense)">$0</div></div>
       <div class="scard"><div class="scard-lbl">Daily avg</div><div class="scard-val" id="rec-daily" style="color:var(--text2)">$0</div></div>
       <div class="scard"><div class="scard-lbl">Count</div><div class="scard-val" id="rec-count" style="color:var(--text2)">0</div></div>
@@ -1328,14 +1332,14 @@ td.amt.one { color: var(--oneoff); }
       </div>
     </div>
 
-    <div class="summary-row" style="grid-template-columns:repeat(4,1fr)">
+    <div class="summary-row" style="grid-template-columns:repeat(4,minmax(0,1fr))">
       <div class="scard"><div class="scard-lbl">This Week</div><div class="scard-val" id="wh-week-hrs" style="color:var(--gold)">0.0 hrs</div><div class="scard-sub" id="wh-week-amt">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">This Month</div><div class="scard-val" id="wh-month-hrs" style="color:var(--gold)">0.0 hrs</div><div class="scard-sub" id="wh-month-amt">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">Unbilled Hours</div><div class="scard-val" id="wh-unbilled-hrs" style="color:var(--savings)">0.0 hrs</div><div class="scard-sub" id="wh-unbilled-amt">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">Paid YTD</div><div class="scard-val" id="wh-paid-ytd" style="color:var(--income)">$0.00</div><div class="scard-sub">hours + mileage</div></div>
     </div>
 
-    <div class="summary-row" style="grid-template-columns:repeat(4,1fr);margin-top:-6px">
+    <div class="summary-row" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-top:-6px">
       <div class="scard"><div class="scard-lbl">Mileage This Week</div><div class="scard-val" id="wh-week-dist" style="color:var(--gold)">0.0</div><div class="scard-sub" id="wh-week-dist-amt">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">Mileage This Month</div><div class="scard-val" id="wh-month-dist" style="color:var(--gold)">0.0</div><div class="scard-sub" id="wh-month-dist-amt">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">Unbilled Mileage</div><div class="scard-val" id="wh-unbilled-dist" style="color:var(--savings)">0.0</div><div class="scard-sub" id="wh-unbilled-dist-amt">$0.00</div></div>
@@ -1381,7 +1385,7 @@ td.amt.one { color: var(--oneoff); }
       </div>
     </div>
 
-    <div class="summary-row" style="grid-template-columns:repeat(3,1fr);margin-top:16px">
+    <div class="summary-row" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px">
       <div class="scard"><div class="scard-lbl">Expenses This Month</div><div class="scard-val" id="wh-month-exp" style="color:var(--gold)">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">Unbilled Expenses</div><div class="scard-val" id="wh-unbilled-exp" style="color:var(--savings)">$0.00</div></div>
       <div class="scard"><div class="scard-lbl">Expenses YTD</div><div class="scard-val" id="wh-exp-ytd" style="color:var(--text2)">$0.00</div></div>
@@ -1534,7 +1538,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v2.5</div>
+</div></div><div class="version-mark">Vestry v2.8</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1783,7 +1787,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.5';
+var APP_VERSION = 'v2.8';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -2730,12 +2734,13 @@ function toggleInvoicePaid(id) {
 function deleteInvoice(id) {
   var inv = STATE.invoices.find(function(x){ return x.id === id; });
   if (!inv) return;
-  if (!confirm('Delete invoice ' + inv.number + '? Its logged hours will become unbilled again.')) return;
+  if (!confirm('Delete invoice ' + inv.number + '? Its logged hours, mileage, and expenses will become unbilled again.')) return;
   if (inv.transactionId) {
     STATE.transactions = STATE.transactions.filter(function(t){ return t.id !== inv.transactionId; });
   }
   STATE.workHours.forEach(function(w){ if (w.invoiceId === id) w.invoiceId = null; });
   STATE.mileage.forEach(function(m){ if (m.invoiceId === id) m.invoiceId = null; });
+  STATE.expenses.forEach(function(x){ if (x.invoiceId === id) x.invoiceId = null; });
   STATE.invoices = STATE.invoices.filter(function(x){ return x.id !== id; });
   save();
   renderWorkHoursPage();
