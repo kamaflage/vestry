@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.8";
+  --version:   "v2.9";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1110,7 +1110,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.8</span>
+    <span class="logo-ver">v2.9</span>
   </div>
 
   <div class="topbar-actions">
@@ -1538,7 +1538,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v2.8</div>
+</div></div><div class="version-mark">Vestry v2.9</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1787,7 +1787,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.8';
+var APP_VERSION = 'v2.9';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -4033,7 +4033,7 @@ document.addEventListener('keydown', function(e) {
         <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">3</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">+ Log Expense</div><div class="hc-step-desc">For store pickups, supplies, or anything you paid for that needs to be paid back. Enter the date, store, and amount. These roll into a formal invoice the same as Hours and Mileage — or, for informal reimbursement, use "📋 Copy Summary for Range" in the Expense Log to get a paste-ready total plus a list of the stores, and mark them sent without generating a full invoice.</div></div></div>
         <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">4</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">🧾 Generate Invoice</div><div class="hc-step-desc">Pick a range — This Week, Last Week, This Month, Last Month, or a Custom range. Vestry pulls every un-invoiced hour, mileage entry, and expense in that range and totals them at your configured rates.</div></div></div>
         <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">5</div><div class="hc-step-line"></div></div><div class="hc-step-body"><div class="hc-step-title">View, Print, or Save as PDF</div><div class="hc-step-desc">The invoice opens automatically. "Print / Save PDF" opens a clean printable copy in a new tab — use your browser's print dialog and choose "Save as PDF" if you need a file to send.</div></div></div>
-        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">6</div></div><div class="hc-step-body"><div class="hc-step-title">Mark as Paid</div><div class="hc-step-desc">Once the client pays, mark the invoice Paid. This creates an Income transaction dated today, using your configured category label, and it now counts in your dashboard totals and Trends.</div></div></div>
+        <div class="hc-step"><div class="hc-step-left"><div class="hc-step-num">6</div></div><div class="hc-step-body"><div class="hc-step-title">Mark as Paid</div><div class="hc-step-desc">Once the client pays, click the 👁 icon on the invoice row (Invoices section) to open it, then click <strong>Mark as Paid</strong> at the bottom. This creates an Income transaction dated today, using your configured category label, and it now counts in your dashboard totals and Trends. The same button toggles back to Unpaid if you mis-click.</div></div></div>
       </div>
 
       <div class="hc-warn"><span>⚠️</span><span><strong>Hours and mileage logged are not income until the invoice is marked Paid.</strong> An unpaid invoice does not affect your budget totals — this avoids counting money you haven't received yet.</span></div>
