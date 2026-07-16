@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.9";
+  --version:   "v2.14";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -71,7 +71,8 @@ body.dark {
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 13px; transition: background .2s, color .2s; }
+html { overflow-x: hidden; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 13px; transition: background .2s, color .2s; overflow-x: hidden; }
 
 /* ── SHELL ──────────────────────────────────────────────── */
 .shell {
@@ -413,6 +414,25 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
 .btn-primary:hover { background: var(--gold); border-color: var(--gold); color: var(--bg); }
 .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
+.carry-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  font-size: 11px;
+}
+.carry-item { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+.carry-lbl { color: var(--text3); }
+.carry-val { font-weight: 600; color: var(--text); }
+.carry-end { color: var(--text); }
+.carry-arrow { color: var(--text3); flex-shrink: 0; }
 /* ── TABLE ──────────────────────────────────────────────── */
 .tbl-wrap {
   background: var(--bg2);
@@ -597,6 +617,7 @@ td.amt.one { color: var(--oneoff); }
 .tooltip-content {
   visibility: hidden;
   width: 220px;
+  max-width: calc(100vw - 32px);
   background-color: var(--bg2);
   color: var(--text);
   border: 1px solid var(--border);
@@ -631,6 +652,19 @@ td.amt.one { color: var(--oneoff); }
   border-width: 5px;
   border-style: solid;
   border-color: var(--border) transparent transparent transparent;
+}
+/* For badges that sit at the actual right edge of the page (last grid column, end of a
+   flex strip) — centering would push the popup off-viewport there, so anchor it to the
+   right of the badge instead of centering on it. */
+.tooltip-content-right {
+  left: auto;
+  right: -8px;
+  transform: none;
+}
+.tooltip-content-right::after {
+  left: auto;
+  right: 10px;
+  margin-left: 0;
 }
 .config-card {
   background: var(--bg2);
@@ -1110,7 +1144,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.9</span>
+    <span class="logo-ver">v2.14</span>
   </div>
 
   <div class="topbar-actions">
@@ -1206,6 +1240,14 @@ td.amt.one { color: var(--oneoff); }
       <div class="motiv-badge" id="motiv-badge" style="display:none"></div>
     </div>
 
+    <div class="carry-strip" id="carry-strip">
+      <span class="carry-item"><span class="carry-lbl">Started <span id="carry-month-lbl"></span> with</span><span class="carry-val" id="carry-start">$0.00</span></span>
+      <span class="carry-arrow">→</span>
+      <span class="carry-item"><span class="carry-lbl">Net this month</span><span class="carry-val" id="carry-net">+$0.00</span></span>
+      <span class="carry-arrow">→</span>
+      <span class="carry-item"><span class="carry-lbl">Ending at</span><span class="carry-val carry-end" id="carry-end">$0.00</span><span class="help-badge">?<span class="tooltip-content tooltip-content-right">Your cumulative liquid position across all-time, not just this month — so a good month can't hide an ongoing overall bleed.</span></span></span>
+    </div>
+
     <div class="summary-row">
       <div class="scard scard-income scard-clickable" onclick="openCardDetail('income')" title="See income breakdown">
         <div class="scard-lbl">Income</div>
@@ -1233,11 +1275,12 @@ td.amt.one { color: var(--oneoff); }
       <div class="scard scard-saved scard-clickable" onclick="openCardDetail('saved')" title="See savings goals">
         <div class="scard-lbl">Saved</div>
         <div class="scard-val" id="ov-saved" style="color:var(--savings)">$0.00</div>
-        <div class="scard-sub">goal contributions</div>
+        <div class="scard-sub">net this month<span class="help-badge">?<span class="tooltip-content tooltip-content-right">Deposits (type "Savings") minus withdrawals — log a withdrawal as a normal Expense with category "Savings" and it'll net out here automatically.</span></span></div>
         <div class="scard-prog" id="ov-saved-prog" style="display:none">
           <div class="scard-prog-track"><div class="scard-prog-fill" id="ov-saved-fill" style="background:var(--savings)"></div></div>
           <div class="scard-prog-lbl" id="ov-saved-prog-lbl"></div>
         </div>
+        <div class="scard-sub" id="ov-saved-balance" style="margin-top:2px">Balance: $0.00</div>
       </div>
     </div>
 
@@ -1538,7 +1581,7 @@ td.amt.one { color: var(--oneoff); }
     </div>
   </div>
 
-</div></div><div class="version-mark">Vestry v2.9</div>
+</div></div><div class="version-mark">Vestry v2.14</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1787,7 +1830,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.9';
+var APP_VERSION = 'v2.14';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -3034,12 +3077,51 @@ function render() {
   var c    = STATE.config;
   var income   = txns.filter(function(t){ return t.type==='income'; }).reduce(function(s,t){ return s+t.amt; },0);
   var expenses = txns.filter(function(t){ return t.type==='expense'||t.type==='one-off'; }).reduce(function(s,t){ return s+t.amt; },0);
-  var saved    = txns.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var savedDeposits    = txns.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var savedWithdrawals = txns.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var saved = savedDeposits - savedWithdrawals;
   var net = income - expenses - saved;
+
+  // All-time cumulative liquid position: everything strictly before the currently-viewed month,
+  // vs. this month's net, so "am I bleeding overall" doesn't get hidden by a single good month.
+  var ym = STATE.currentYear + '-' + String(STATE.currentMonth + 1).padStart(2,'0');
+  var priorTxns = STATE.transactions.filter(function(t){ return t.date && t.date < ym + '-01'; });
+  var priorIncome = priorTxns.filter(function(t){ return t.type==='income'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var priorExpenses = priorTxns.filter(function(t){ return t.type==='expense'||t.type==='one-off'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var priorSavedDep = priorTxns.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var priorSavedWd  = priorTxns.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var startingBalance = priorIncome - priorExpenses - (priorSavedDep - priorSavedWd);
+  var endingBalance = startingBalance + net;
+
+  // All-time Savings Balance: the actual cumulative pot, distinct from "contributed this month."
+  var allTimeSavedDep = STATE.transactions.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var allTimeSavedWd  = STATE.transactions.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var savingsBalance = allTimeSavedDep - allTimeSavedWd;
+
+  var startEl = document.getElementById('carry-start');
+  if (startEl) {
+    startEl.textContent = (startingBalance < 0 ? '−' : '') + fmt(startingBalance);
+    startEl.style.color = startingBalance < 0 ? 'var(--expense)' : 'var(--text)';
+    var carryNetEl = document.getElementById('carry-net');
+    carryNetEl.textContent = (net >= 0 ? '+' : '−') + fmt(net);
+    carryNetEl.style.color = net >= 0 ? 'var(--income)' : 'var(--expense)';
+    var endEl = document.getElementById('carry-end');
+    endEl.textContent = (endingBalance < 0 ? '−' : '') + fmt(endingBalance);
+    endEl.style.color = endingBalance >= 0 ? 'var(--text)' : 'var(--expense)';
+    var carryLbl = document.getElementById('carry-month-lbl');
+    if (carryLbl) carryLbl.textContent = MONTHS_SHORT[STATE.currentMonth] + ' ' + STATE.currentYear;
+  }
+  var balEl = document.getElementById('ov-saved-balance');
+  if (balEl) {
+    balEl.textContent = 'Balance: ' + (savingsBalance < 0 ? '−' : '') + fmt(savingsBalance);
+    balEl.style.color = savingsBalance < 0 ? 'var(--expense)' : 'var(--text3)';
+  }
 
   document.getElementById('ov-income').textContent   = fmt(income);
   document.getElementById('ov-expenses').textContent = fmt(expenses);
-  document.getElementById('ov-saved').textContent    = fmt(saved);
+  var savedEl = document.getElementById('ov-saved');
+  savedEl.textContent = (saved >= 0 ? '' : '−') + fmt(saved);
+  savedEl.style.color = saved >= 0 ? 'var(--savings)' : 'var(--expense)';
   var netEl = document.getElementById('ov-net');
   netEl.textContent = (net >= 0 ? '+' : '−') + fmt(net);
   netEl.style.color = net >= 0 ? 'var(--income)' : 'var(--expense)';
@@ -3589,6 +3671,23 @@ renderBranding();
 render();
 maybeShowOnboarding();
 
+// Defensive: if the page has any leftover horizontal scroll offset for any reason,
+// opening a modal shouldn't inherit it — force back to the left edge every time.
+(function() {
+  var mo = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      if (m.attributeName === 'class' && m.target.classList && m.target.classList.contains('open')) {
+        window.scrollTo(0, window.scrollY);
+        document.documentElement.scrollLeft = 0;
+        document.body.scrollLeft = 0;
+      }
+    });
+  });
+  document.querySelectorAll('.modal-bg, #help-overlay').forEach(function(el) {
+    mo.observe(el, { attributes: true, attributeFilter: ['class'] });
+  });
+})();
+
 // ── CARD DETAIL MODAL ───────────────────────────────────────
 function openCardDetail(type) {
   if (type === 'cw-hours' || type === 'cw-dist') { showPage('workhours'); return; }
@@ -3636,21 +3735,32 @@ function openCardDetail(type) {
   else if (type === 'net') {
     var inc2 = monthly.filter(function(t){ return t.type==='income'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
     var exp2 = monthly.filter(function(t){ return t.type==='expense'||t.type==='one-off'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
-    var net = inc2 - exp2;
+    var sav2dep = monthly.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
+    var sav2wd  = monthly.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
+    var sav2 = sav2dep - sav2wd;
+    var net = inc2 - exp2 - sav2;
     title = 'Net — This Month';
-    html = '<p class="modal-sub">Net is what you kept after expenses. Positive means you spent less than you earned.</p>';
+    html = '<p class="modal-sub">Net is what\'s left unallocated after expenses and savings moves. Positive means you have cash still free at month end.</p>';
     html += '<div style="display:flex;flex-direction:column;gap:2px;margin:16px 0">';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Income</span><span style="color:var(--income)">'+fmt(inc2)+'</span></div>';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Expenses</span><span style="color:var(--expense)">− '+fmt(exp2)+'</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Savings (net)</span><span style="color:var(--savings)">'+(sav2>=0?'− ':'+ ')+fmt(Math.abs(sav2))+'</span></div>';
     html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Net</span><span style="color:'+(net>=0?'var(--income)':'var(--expense)')+'">'+(net>=0?'+':'')+fmt(net)+'</span></div></div>';
-    html += '<p style="font-size:11px;color:var(--text3)">'+(net<0?'You spent more than you earned this month. Check your expense categories for areas to trim.':'You kept '+fmt(net)+' this month. Consider moving some to a savings goal.')+'</p>';
+    html += '<p style="font-size:11px;color:var(--text3)">'+(net<0?'You spent more than you earned and saved this month. Check your expense categories for areas to trim.':'You have '+fmt(net)+' still unallocated this month. Consider moving some to a savings goal.')+'</p>';
   }
 
   else if (type === 'saved') {
     var contrib = monthly.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
+    var withdrawn = monthly.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
+    var allDep = STATE.transactions.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
+    var allWd  = STATE.transactions.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
     title = 'Savings — This Month';
-    html = '<p class="modal-sub">Contributions to savings goals this month, and progress toward each goal.</p>';
-    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:14px"><span>Contributed this month</span><strong style="color:var(--savings)">'+fmt(contrib)+'</strong></div>';
+    html = '<p class="modal-sub">Contributions and withdrawals this month, your running balance, and progress toward each goal. Log a withdrawal as a normal Expense with category "Savings" and it nets out automatically.</p>';
+    html += '<div style="display:flex;flex-direction:column;gap:2px;margin-bottom:14px">';
+    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Contributed this month</span><strong style="color:var(--income)">+'+fmt(contrib)+'</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Withdrawn this month</span><strong style="color:var(--expense)">−'+fmt(withdrawn)+'</strong></div>';
+    var netAllTime = allDep - allWd;
+    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Savings Balance (all-time)</span><span style="color:'+(netAllTime<0?'var(--expense)':'var(--savings)')+'">'+(netAllTime<0?'−':'')+fmt(netAllTime)+'</span></div></div>';
     if (!STATE.goals.length) { html += '<p style="color:var(--text3)">No savings goals yet. Add one from the Savings Goals page.</p>'; }
     else {
       STATE.goals.forEach(function(g){
