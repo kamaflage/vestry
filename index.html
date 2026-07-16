@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.14";
+  --version:   "v2.21";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -673,6 +673,7 @@ td.amt.one { color: var(--oneoff); }
   padding: 20px;
   box-shadow: var(--shadow);
 }
+.config-card-danger { border-color: var(--expense); border-width: 1.5px; }
 .config-card h3 {
   font-family: var(--serif);
   font-size: 1rem;
@@ -1144,7 +1145,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.14</span>
+    <span class="logo-ver">v2.21</span>
   </div>
 
   <div class="topbar-actions">
@@ -1579,9 +1580,25 @@ td.amt.one { color: var(--oneoff); }
       </div>
 
     </div>
+
+    <div class="config-card config-card-danger collapsed" style="margin-bottom:22px">
+      <div class="config-card-header" onclick="toggleConfigCard(this)">
+        <h3 style="color:var(--expense)">⚠ Danger Zone</h3>
+        <span class="config-chevron">▾</span>
+      </div>
+      <div class="config-card-summary">Permanently erase all data on this device.</div>
+      <div class="config-card-body">
+        <p class="config-desc">Deletes every transaction, recurring bill, goal, work hour, mileage entry, expense, and invoice — plus all Config settings — permanently, on this device. There is no undo. Export a Backup first (Settings → Backup) if you want to keep a copy.</p>
+        <div class="config-form">
+          <div class="field"><label>Type "reset" to confirm</label><input type="text" id="nuke-confirm" placeholder="reset" autocomplete="off" oninput="updateNukeButton()"></div>
+          <button class="btn" id="nuke-btn" onclick="nukeEverything()" disabled style="background:var(--expense);color:#fff;opacity:.4;cursor:not-allowed">Delete Everything</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-</div></div><div class="version-mark">Vestry v2.14</div>
+</div></div><div class="version-mark">Vestry v2.21</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1647,12 +1664,9 @@ td.amt.one { color: var(--oneoff); }
     <input type="hidden" id="goal-id">
     <div class="form-col">
       <div class="field"><label>Goal Name</label><input type="text" id="goal-name" placeholder="e.g. Emergency Fund"></div>
-      <div class="form-grid-2">
-        <div class="field"><label>Target ($)</label><input type="number" id="goal-target" min="0" step="0.01"></div>
-        <div class="field"><label>Already Saved ($)</label><input type="number" id="goal-current" min="0" step="0.01" value="0"></div>
-      </div>
-      <div class="field"><label>Monthly Contribution ($)</label><input type="number" id="goal-monthly" min="0" step="0.01" placeholder="How much do you plan to put in monthly?"></div>
+      <div class="field"><label>Target ($)</label><input type="number" id="goal-target" min="0" step="0.01"></div>
     </div>
+    <p class="config-desc" style="margin-top:-6px">Progress is tracked against your one overall Savings Balance (Contributed − Withdrawn, all-time) — not a separate amount per goal.</p>
     <div class="btns">
       <button class="btn" onclick="closeModal('goal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveGoal()">Save</button>
@@ -1830,7 +1844,7 @@ td.amt.one { color: var(--oneoff); }
 
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.14';
+var APP_VERSION = 'v2.21';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -2023,14 +2037,10 @@ function openModal(name, editId) {
       if (g) {
         document.getElementById('goal-name').value    = g.name;
         document.getElementById('goal-target').value  = g.target;
-        document.getElementById('goal-current').value = g.current;
-        document.getElementById('goal-monthly').value = g.monthly;
       }
     } else {
       document.getElementById('goal-name').value    = '';
       document.getElementById('goal-target').value  = '';
-      document.getElementById('goal-current').value = '0';
-      document.getElementById('goal-monthly').value = '';
     }
   } else if (name === 'workhour') {
     if (editId) {
@@ -2156,16 +2166,14 @@ function saveGoal() {
   var editId  = document.getElementById('goal-id').value;
   var name    = document.getElementById('goal-name').value.trim();
   var target  = parseFloat(document.getElementById('goal-target').value);
-  var current = parseFloat(document.getElementById('goal-current').value) || 0;
-  var monthly = parseFloat(document.getElementById('goal-monthly').value) || 0;
   
   if (!name || isNaN(target) || target <= 0) return;
 
   if (editId) {
     var idx = STATE.goals.findIndex(function(g) { return g.id == editId; });
-    if (idx > -1) STATE.goals[idx] = { id: parseFloat(editId), name, target, current, monthly };
+    if (idx > -1) STATE.goals[idx] = { id: parseFloat(editId), name, target };
   } else {
-    STATE.goals.push({ id: Date.now(), name, target, current, monthly });
+    STATE.goals.push({ id: Date.now(), name, target });
   }
 
   save(); closeModal('goal'); render();
@@ -2426,6 +2434,11 @@ function entriesInRange(list, from, to) {
   return list.filter(function(w){ return w.date >= from && w.date <= to; });
 }
 function sumHours(list) { return list.reduce(function(s,w){ return s + w.hours; }, 0); }
+function allTimeSavingsBalance() {
+  var dep = STATE.transactions.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  var wd  = STATE.transactions.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+t.amt; },0);
+  return dep - wd;
+}
 function sumDist(list) { return list.reduce(function(s,m){ return s + m.distance; }, 0); }
 function sumDistCost(list) {
   return list.reduce(function(s,m){
@@ -2833,6 +2846,27 @@ function toggleWHSection(id) {
 }
 
 // ── CONFIG ───────────────────────────────────────────────────
+// ── DANGER ZONE — full data reset ───────────────────────────
+function updateNukeButton() {
+  var val = (document.getElementById('nuke-confirm').value || '').trim().toLowerCase();
+  var btn = document.getElementById('nuke-btn');
+  var armed = val === 'reset';
+  btn.disabled = !armed;
+  btn.style.opacity = armed ? '1' : '.4';
+  btn.style.cursor = armed ? 'pointer' : 'not-allowed';
+}
+function nukeEverything() {
+  var val = (document.getElementById('nuke-confirm').value || '').trim().toLowerCase();
+  if (val !== 'reset') return;
+  if (!confirm('This permanently deletes ALL data on this device — every transaction, work hour, mileage entry, expense, invoice, and setting. This cannot be undone. Continue?')) return;
+  try {
+    localStorage.removeItem('vestry_state');
+    localStorage.removeItem('vestry_ob_done');
+    localStorage.removeItem('vestry_install_dismissed');
+  } catch(e) {}
+  location.reload();
+}
+
 function saveConfig() {
   STATE.config.family        = document.getElementById('cfg-family').value.trim();
   STATE.config.person        = document.getElementById('cfg-person').value.trim();
@@ -3094,9 +3128,7 @@ function render() {
   var endingBalance = startingBalance + net;
 
   // All-time Savings Balance: the actual cumulative pot, distinct from "contributed this month."
-  var allTimeSavedDep = STATE.transactions.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+t.amt; },0);
-  var allTimeSavedWd  = STATE.transactions.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+t.amt; },0);
-  var savingsBalance = allTimeSavedDep - allTimeSavedWd;
+  var savingsBalance = allTimeSavingsBalance();
 
   var startEl = document.getElementById('carry-start');
   if (startEl) {
@@ -3113,7 +3145,8 @@ function render() {
   }
   var balEl = document.getElementById('ov-saved-balance');
   if (balEl) {
-    balEl.textContent = 'Balance: ' + (savingsBalance < 0 ? '−' : '') + fmt(savingsBalance);
+    var totalGoalTargetOv = STATE.goals.reduce(function(s,g){ return s+(g.target||0); }, 0);
+    balEl.textContent = 'Balance: ' + (savingsBalance < 0 ? '−' : '') + fmt(savingsBalance) + (totalGoalTargetOv>0 ? ' / '+fmt(totalGoalTargetOv) : '');
     balEl.style.color = savingsBalance < 0 ? 'var(--expense)' : 'var(--text3)';
   }
 
@@ -3204,19 +3237,13 @@ function render() {
   var goalsHtml = STATE.goals.length === 0
     ? '<div style="grid-column:span 3;text-align:center;padding:28px;color:var(--text3);font-size:11px">No savings goals yet. Add one to track your progress.</div>'
     : STATE.goals.map(function(g){
-        var pct = Math.min(100, Math.round((g.current / g.target) * 100));
-        var remaining = Math.max(0, g.target - g.current);
-        var monthsLeft = g.monthly > 0 ? Math.ceil(remaining / g.monthly) : null;
         return '<div class="goal-card">' +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
           '<div class="goal-name">' + esc(g.name) + '</div>' +
           '<div><button class="del-btn edit-btn" onclick="openModal(\'goal\', ' + g.id + ')" title="Edit">✎</button>' +
           '<button class="del-btn" onclick="deleteGoal(' + g.id + ')" title="Delete">✕</button></div></div>' +
-          '<div class="goal-amounts"><strong>' + fmt(g.current) + '</strong> of ' + fmt(g.target) + '</div>' +
-          '<div class="goal-track"><div class="goal-fill" style="width:' + pct + '%"></div></div>' +
-          '<div class="goal-footer"><span class="goal-pct">' + pct + '% complete</span>' +
-          (monthsLeft ? '<span class="goal-monthly">~' + monthsLeft + ' months at ' + fmt(g.monthly) + '/mo</span>' : '') +
-          '</div></div>';
+          '<div class="goal-amounts"><strong>Target: ' + fmt(g.target) + '</strong></div>' +
+          '</div>';
       }).join('');
   document.getElementById('goals-grid').innerHTML = goalsHtml;
 
@@ -3755,23 +3782,19 @@ function openCardDetail(type) {
     var allDep = STATE.transactions.filter(function(t){ return t.type==='savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
     var allWd  = STATE.transactions.filter(function(t){ return t.type==='expense' && t.cat==='Savings'; }).reduce(function(s,t){ return s+parseFloat(t.amt||0); },0);
     title = 'Savings — This Month';
-    html = '<p class="modal-sub">Contributions and withdrawals this month, your running balance, and progress toward each goal. Log a withdrawal as a normal Expense with category "Savings" and it nets out automatically.</p>';
+    html = '<p class="modal-sub">Contributions and withdrawals this month, your running balance, and your goal targets. Log a withdrawal as a normal Expense with category "Savings" and it nets out automatically.</p>';
     html += '<div style="display:flex;flex-direction:column;gap:2px;margin-bottom:14px">';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Contributed this month</span><strong style="color:var(--income)">+'+fmt(contrib)+'</strong></div>';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Withdrawn this month</span><strong style="color:var(--expense)">−'+fmt(withdrawn)+'</strong></div>';
     var netAllTime = allDep - allWd;
-    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Savings Balance (all-time)</span><span style="color:'+(netAllTime<0?'var(--expense)':'var(--savings)')+'">'+(netAllTime<0?'−':'')+fmt(netAllTime)+'</span></div></div>';
+    var totalGoalTarget = STATE.goals.reduce(function(s,g){ return s+(g.target||0); }, 0);
+    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Savings Balance (all-time)</span><span style="color:'+(netAllTime<0?'var(--expense)':'var(--savings)')+'">'+(netAllTime<0?'−':'')+fmt(netAllTime)+(totalGoalTarget>0?' / '+fmt(totalGoalTarget):'')+'</span></div></div>';
     if (!STATE.goals.length) { html += '<p style="color:var(--text3)">No savings goals yet. Add one from the Savings Goals page.</p>'; }
     else {
       STATE.goals.forEach(function(g){
-        var pct = g.target>0 ? Math.min(100,Math.round(g.current/g.target*100)) : 0;
-        var months = g.monthly>0&&g.target>g.current ? Math.ceil((g.target-g.current)/g.monthly) : null;
-        html += '<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:500">'+esc(g.name)+'</span><span style="font-size:11px;color:var(--text3)">'+fmt(g.current)+' / '+fmt(g.target)+'</span></div>';
-        html += '<div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--savings);border-radius:3px;transition:width .4s"></div></div>';
-        html += '<div style="font-size:10px;color:var(--text3);margin-top:3px">'+pct+'% complete'+(months?' · ~'+months+' months at '+fmt(g.monthly)+'/mo':'')+'</div></div>';
+        html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-weight:500">'+esc(g.name)+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Target: '+fmt(g.target)+'</div></div>';
       });
     }
-    if (c.savingsTarget) { html += '<div style="font-size:11px;color:var(--text3);margin-top:4px">Monthly target: '+fmt(c.savingsTarget)+'</div>'; }
   }
 
   else if (type === 'cw-unbilled') {
@@ -4202,7 +4225,7 @@ document.addEventListener('keydown', function(e) {
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use Vestry offline? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Yes. Once installed to your home screen, Vestry works fully offline. The service worker caches everything needed.</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">I accidentally deleted a transaction. Can I undo it? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">There is no undo in the current version. If you have a recent backup you can restore it, but that replaces all data since the backup. Best practice: back up at the end of each month.</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">My partner and I logged the same expense. Will it double-count? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">No. Merge uses duplicate detection — same date, description, and amount = one entry. The merge preview shows exactly how many duplicates will be skipped before you confirm.</div></div></div>
-        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I reset Vestry and start fresh? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Open browser developer tools (F12 on desktop), go to Application → Local Storage, and delete entries starting with vestry_. Reload and the setup wizard appears again. Export a backup first!</div></div></div>
+        <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I reset Vestry and start fresh? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Config → Danger Zone → type "reset" into the confirmation box, then Delete Everything. This permanently wipes all data and reloads the app fresh. Export a backup first — there's no undo!</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I run the setup wizard again? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Delete the localStorage key vestry_ob_done and reload. Your existing transactions and config are preserved — the wizard only writes to config fields.</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">How do I change my currency symbol? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">Config → Motivational Style section → Currency Symbol. Options: $, £, €, ₹. Updates everywhere in the app immediately.</div></div></div>
         <div class="hc-faq-item"><div class="hc-faq-q" onclick="this.parentElement.classList.toggle('open')">Why doesn't logging hours show up as income right away? <span class="hc-faq-arrow">▼</span></div><div class="hc-faq-a"><div class="hc-faq-a-inner">By design. Hours and mileage are unbilled until you generate an invoice, and the invoice doesn't become income until you mark it Paid. This keeps your budget reflecting money actually received, not money you're owed.</div></div></div>
