@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.46";
+  --version:   "v2.47";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1144,7 +1144,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.46</span>
+    <span class="logo-ver">v2.47</span>
   </div>
 
   <div class="topbar-actions">
@@ -1320,7 +1320,7 @@ td.amt.one { color: var(--oneoff); }
     <div class="sec-hdr"><div class="sec-title">Category Breakdown <span class="sec-tag">checking · this month</span></div></div>
     <div class="chart-card" id="ov-cat-chart"></div>
 
-    <div class="sec-hdr"><div class="sec-title">Savings by Category <span class="sec-tag">all-time · running balance</span></div></div>
+    <div class="sec-hdr"><div class="sec-title">Savings by Category <span class="sec-tag" id="ov-savcat-tag">all-time · running balance</span></div></div>
     <div id="ov-sav-cat-breakdown" style="margin-bottom:8px"></div>
   </div>
 
@@ -1404,7 +1404,7 @@ td.amt.one { color: var(--oneoff); }
       <button class="btn btn-primary" onclick="openModal('goal')">+ Goal</button>
     </div>
     <div class="goals-grid" id="goals-grid"></div>
-    <div class="sec-hdr"><div class="sec-title">Savings by Category <span class="sec-tag">all-time · running balance</span><span class="help-badge">?<span class="tooltip-content tooltip-content-right">Log a deposit straight into savings as Income with Funding Source: Savings, using a category like "Nathan Savings". Log a withdrawal from that pot as an Expense, same category, same Funding Source. Each category's balance is Income − Expense within savings, and they all add up to the Savings Balance above.</span></span></div></div>
+    <div class="sec-hdr"><div class="sec-title">Savings by Category <span class="sec-tag" id="sav-savcat-tag">all-time · running balance</span><span class="help-badge">?<span class="tooltip-content tooltip-content-right">Log a deposit straight into savings as Income with Funding Source: Savings, using a category like "Nathan Savings". Log a withdrawal from that pot as an Expense, same category, same Funding Source. Each category's balance is Income − Expense within savings, and they all add up to the Savings Balance above.</span></span></div></div>
     <div id="sav-cat-breakdown" style="display:flex;flex-direction:column;gap:2px;margin-bottom:20px"></div>
     <div class="sec-hdr"><div class="sec-title">Contributions <span class="sec-tag">this month</span></div></div>
     <div class="tbl-wrap">
@@ -1683,7 +1683,7 @@ td.amt.one { color: var(--oneoff); }
 
   </div>
 
-</div></div><div class="version-mark">Vestry v2.46</div>
+</div></div><div class="version-mark">Vestry v2.47</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">

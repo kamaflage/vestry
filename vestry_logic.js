@@ -150,6 +150,18 @@ function savingsBalanceThroughViewedMonth() {
   return savingsBalance(through, 0);
 }
 
+// Same "as of the end of the viewed month" cutoff, applied to the per-category
+// breakdown, so it always sums back to savingsBalanceThroughViewedMonth() \u2014
+// showing the full all-time category totals while the main balance figure is
+// scoped to a past month made the two numbers on the same page silently stop
+// reconciling with each other.
+function savingsByCategoryThroughViewedMonth() {
+  var ym = STATE.currentYear + '-' + String(STATE.currentMonth + 1).padStart(2,'0');
+  var cutoff = ym + '-31';
+  var through = STATE.transactions.filter(function(t){ return t.date && t.date <= cutoff; });
+  return savingsByCategory(through);
+}
+
 // Savings by Category: running (all-time) net balance per category, for
 // money that lives directly in the savings account (source: 'savings').
 // Lets a category double as a sub-account — e.g. logging a deposit as
@@ -320,6 +332,7 @@ Vestry.Logic = {
   savingsBalance: savingsBalance,
   allTimeSavingsBalance: allTimeSavingsBalance,
   savingsBalanceThroughViewedMonth: savingsBalanceThroughViewedMonth,
+  savingsByCategoryThroughViewedMonth: savingsByCategoryThroughViewedMonth,
   savingsByCategory: savingsByCategory,
   filterTxns: filterTxns
 };

@@ -1566,6 +1566,11 @@ function render() {
 
   renderSavCatBreakdown('sav-cat-breakdown');
   renderSavCatBreakdown('ov-sav-cat-breakdown');
+  var savCatTagText = savCatBreakdownTag();
+  var ovSavCatTagEl = document.getElementById('ov-savcat-tag');
+  if (ovSavCatTagEl) ovSavCatTagEl.textContent = savCatTagText;
+  var savSavCatTagEl = document.getElementById('sav-savcat-tag');
+  if (savSavCatTagEl) savSavCatTagEl.textContent = savCatTagText;
 
   renderTrends();
 }
@@ -1575,7 +1580,7 @@ function render() {
 function renderSavCatBreakdown(elId) {
   var el = document.getElementById(elId);
   if (!el) return;
-  var catBalances = savingsByCategory(STATE.transactions);
+  var catBalances = savingsByCategoryThroughViewedMonth();
   el.innerHTML = catBalances.length === 0
     ? '<div style="text-align:center;padding:16px;color:var(--text3);font-size:11px">No category-tagged savings activity yet. Log a deposit as Income with Funding Source: Savings and a category name to start tracking one.</div>'
     : catBalances.map(function(row){
@@ -1583,6 +1588,11 @@ function renderSavCatBreakdown(elId) {
         return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span>' + esc(row.cat) + '</span>' +
           '<strong style="color:' + (neg ? 'var(--expense)' : 'var(--savings)') + '">' + (neg ? '\u2212' : '') + fmt(row.balance) + '</strong></div>';
       }).join('');
+}
+function savCatBreakdownTag() {
+  var realToday = new Date();
+  var viewingCurrent = STATE.currentMonth === realToday.getMonth() && STATE.currentYear === realToday.getFullYear();
+  return viewingCurrent ? 'all-time \u00b7 running balance' : 'as of ' + MONTHS_SHORT[STATE.currentMonth] + ' ' + STATE.currentYear + ' \u00b7 running balance';
 }
 
 function renderCatBars(containerId, txns) {
@@ -2240,9 +2250,10 @@ function openCardDetail(type) {
         html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-weight:500">'+esc(g.name)+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Target: '+fmt(g.target)+'</div></div>';
       });
     }
-    var catBal = savingsByCategory(STATE.transactions);
+    var catBal = savingsByCategoryThroughViewedMonth();
     if (catBal.length) {
-      html += '<div style="margin-top:14px;font-weight:600;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">By Category (all-time)</div>';
+      var catBalLbl = viewingCurrent2 ? 'By Category (all-time)' : 'By Category (as of ' + MONTHS_SHORT[STATE.currentMonth] + ' ' + STATE.currentYear + ')';
+      html += '<div style="margin-top:14px;font-weight:600;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">'+catBalLbl+'</div>';
       html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px">';
       catBal.forEach(function(row){
         var neg = row.balance < 0;
@@ -2387,6 +2398,7 @@ Vestry.UI = {
   render: render,
   renderCatBars: renderCatBars,
   renderSavCatBreakdown: renderSavCatBreakdown,
+  savCatBreakdownTag: savCatBreakdownTag,
   renderTrends: renderTrends,
   togglePanel: togglePanel,
   importPaste: importPaste,
