@@ -9,7 +9,7 @@
    ============================================================ */
 
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.41';
+var APP_VERSION = 'v2.46';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
