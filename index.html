@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.41";
+  --version:   "v2.43";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1144,7 +1144,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.41</span>
+    <span class="logo-ver">v2.43</span>
   </div>
 
   <div class="topbar-actions">
@@ -1654,6 +1654,18 @@ td.amt.one { color: var(--oneoff); }
 
     </div>
 
+    <div class="config-card collapsed" style="margin-bottom:22px">
+      <div class="config-card-header" onclick="toggleConfigCard(this)">
+        <h3>🌱 Setup Wizard</h3>
+        <span class="config-chevron">▾</span>
+      </div>
+      <div class="config-card-summary">Replay the welcome walkthrough.</div>
+      <div class="config-card-body">
+        <p class="config-desc">Runs the same 5-step welcome walkthrough shown on a brand-new device. Safe to run any time — it only writes to a few Config fields (family name, targets, first intention) and never touches your transactions or anything else already entered.</p>
+        <button class="btn btn-primary" onclick="replaySetupWizard()">Replay Setup Wizard</button>
+      </div>
+    </div>
+
     <div class="config-card config-card-danger collapsed" style="margin-bottom:22px">
       <div class="config-card-header" onclick="toggleConfigCard(this)">
         <h3 style="color:var(--expense)">⚠ Danger Zone</h3>
@@ -1671,7 +1683,7 @@ td.amt.one { color: var(--oneoff); }
 
   </div>
 
-</div></div><div class="version-mark">Vestry v2.41</div>
+</div></div><div class="version-mark">Vestry v2.43</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">

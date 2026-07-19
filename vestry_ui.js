@@ -2075,6 +2075,19 @@ function maybeShowOnboarding() {
   } catch(e){}
 }
 
+// Explicit replay, reachable from Config \u2014 unlike maybeShowOnboarding() this
+// always shows the wizard regardless of existing data or the 'done' flag.
+// Needed because the auto-trigger is silent by design (wrapped in try/catch
+// so a storage error never blocks the app from loading), which means a
+// real first-time user can end up never seeing it with no visible sign why
+// (e.g. a restricted in-app browser, or data already present from setup) \u2014
+// this gives a guaranteed, no-devtools way to see it on any device.
+function replaySetupWizard() {
+  OB_STEP = 0;
+  document.getElementById('ob-backdrop').style.display = 'flex';
+  obRender();
+}
+
 
 
 // ── BOOT ────────────────────────────────────────────────────
@@ -2344,6 +2357,7 @@ Vestry.UI = {
   obSkip: obSkip,
   obFinish: obFinish,
   maybeShowOnboarding: maybeShowOnboarding,
+  replaySetupWizard: replaySetupWizard,
   openCardDetail: openCardDetail,
   toast: toast,
   onTxnTypeChange: onTxnTypeChange
