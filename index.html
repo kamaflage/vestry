@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.43";
+  --version:   "v2.46";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1144,13 +1144,13 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.43</span>
+    <span class="logo-ver">v2.46</span>
   </div>
 
   <div class="topbar-actions">
     <div class="month-nav">
       <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
-      <span class="month-lbl" id="monthLabel">—</span>
+      <span class="month-lbl" id="monthLabel" onclick="openMonthJump()" style="cursor:pointer" title="Jump to a specific month">—</span>
       <button class="mnav-btn" onclick="changeMonth(1)">›</button>
     </div>
     <div class="sep"></div>
@@ -1173,7 +1173,7 @@ td.amt.one { color: var(--oneoff); }
 <div class="mob-actions-panel" id="mob-actions">
   <div class="month-nav">
     <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
-    <span class="month-lbl" id="monthLabelMob">—</span>
+    <span class="month-lbl" id="monthLabelMob" onclick="openMonthJump();toggleMobMenu()" style="cursor:pointer" title="Jump to a specific month">—</span>
     <button class="mnav-btn" onclick="changeMonth(1)">›</button>
   </div>
   <div class="theme-pill" onclick="toggleTheme()">
@@ -1287,9 +1287,9 @@ td.amt.one { color: var(--oneoff); }
         <div class="scard-sub">income − expenses</div>
       </div>
       <div class="scard scard-saved scard-clickable" onclick="openCardDetail('saved')" title="See savings breakdown">
-        <div class="scard-lbl">Savings Balance</div>
+        <div class="scard-lbl" id="ov-saved-lbl">Savings Balance</div>
         <div class="scard-val" id="ov-saved" style="color:var(--savings)">$0.00</div>
-        <div class="scard-sub" id="ov-saved-month">this month: +$0.00<span class="help-badge">?<span class="tooltip-content tooltip-content-right">The big number is your real, accumulated savings account balance — everything anyone has ever put in or taken out, all-time. "This month" below is just money transferred to/from savings this month; spending directly from savings is logged as a normal Expense with Funding Source: Savings instead.</span></span></div>
+        <div class="scard-sub" id="ov-saved-month">this month: +$0.00<span class="help-badge">?<span class="tooltip-content tooltip-content-right">The big number is your real, accumulated savings account balance as of the end of the month you're viewing — browse to a past month with the month picker above to see your balance back then. "This month" below is just money transferred to/from savings in the viewed month; spending directly from savings is logged as a normal Expense with Funding Source: Savings instead.</span></span></div>
         <div class="scard-prog" id="ov-saved-prog" style="display:none">
           <div class="scard-prog-track"><div class="scard-prog-fill" id="ov-saved-fill" style="background:var(--savings)"></div></div>
           <div class="scard-prog-lbl" id="ov-saved-prog-lbl"></div>
@@ -1683,7 +1683,7 @@ td.amt.one { color: var(--oneoff); }
 
   </div>
 
-</div></div><div class="version-mark">Vestry v2.43</div>
+</div></div><div class="version-mark">Vestry v2.46</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1775,6 +1775,30 @@ td.amt.one { color: var(--oneoff); }
     <div class="btns">
       <button class="btn" onclick="closeModal('goal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-monthjump">
+  <div class="modal">
+    <h2>Jump to Month</h2>
+    <div class="form-col">
+      <div class="form-grid-2">
+        <div class="field"><label>Month</label>
+          <select id="mj-month">
+            <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+            <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+            <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+            <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+          </select>
+        </div>
+        <div class="field"><label>Year</label><input type="number" id="mj-year" step="1"></div>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="btn" onclick="closeModal('monthjump')">Cancel</button>
+      <button class="btn" onclick="jumpToToday()">This Month</button>
+      <button class="btn btn-primary" onclick="jumpToMonth()">Go</button>
     </div>
   </div>
 </div>

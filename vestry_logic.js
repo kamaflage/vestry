@@ -137,6 +137,19 @@ function allTimeSavingsBalance() {
   return savingsBalance(STATE.transactions, 0);
 }
 
+// Savings Balance as of the end of the currently VIEWED month (STATE.currentMonth/
+// currentYear), not always today's live total \u2014 so browsing a past month via the
+// month picker shows the real historical balance at that point in time, the same
+// way the Checking carry-strip's Ending Balance already does. Includes every
+// transaction dated on or before the last day of that month, regardless of type
+// or account. Equals allTimeSavingsBalance() while viewing the real current month.
+function savingsBalanceThroughViewedMonth() {
+  var ym = STATE.currentYear + '-' + String(STATE.currentMonth + 1).padStart(2,'0');
+  var cutoff = ym + '-31'; // date strings compare lexicographically; no real date exceeds this
+  var through = STATE.transactions.filter(function(t){ return t.date && t.date <= cutoff; });
+  return savingsBalance(through, 0);
+}
+
 // Savings by Category: running (all-time) net balance per category, for
 // money that lives directly in the savings account (source: 'savings').
 // Lets a category double as a sub-account — e.g. logging a deposit as
@@ -306,6 +319,7 @@ Vestry.Logic = {
   checkingBalance: checkingBalance,
   savingsBalance: savingsBalance,
   allTimeSavingsBalance: allTimeSavingsBalance,
+  savingsBalanceThroughViewedMonth: savingsBalanceThroughViewedMonth,
   savingsByCategory: savingsByCategory,
   filterTxns: filterTxns
 };

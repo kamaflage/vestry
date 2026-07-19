@@ -33,6 +33,34 @@ function changeMonth(dir) {
   render();
 }
 
+// Jump directly to any month/year, rather than stepping one at a time with
+// \u2039/\u203a \u2014 useful once you're more than a couple of months back. Doesn't
+// persist across reload, same as changeMonth: the app always opens on
+// today's real month by design (see saveTransaction's month-switch toast).
+function openMonthJump() {
+  document.getElementById('mj-month').value = STATE.currentMonth;
+  document.getElementById('mj-year').value = STATE.currentYear;
+  document.getElementById('modal-monthjump').classList.add('open');
+}
+function jumpToMonth() {
+  var m = parseInt(document.getElementById('mj-month').value);
+  var y = parseInt(document.getElementById('mj-year').value);
+  if (isNaN(m) || isNaN(y)) return;
+  STATE.currentMonth = m;
+  STATE.currentYear = y;
+  updateMonthLabel();
+  closeModal('monthjump');
+  render();
+}
+function jumpToToday() {
+  var d = new Date();
+  STATE.currentMonth = d.getMonth();
+  STATE.currentYear = d.getFullYear();
+  updateMonthLabel();
+  closeModal('monthjump');
+  render();
+}
+
 function updateMonthLabel() {
   var lbl = MONTHS[STATE.currentMonth] + ' ' + STATE.currentYear;
   document.getElementById('monthLabel').textContent    = lbl;
@@ -265,12 +293,22 @@ function saveTransaction() {
   }
   STATE.transactions.sort(function(a,b){ return b.date.localeCompare(a.date); });
   
-  // Auto-switch to the month of the transaction so it doesn't disappear
+  // Auto-switch to the month of the transaction so it doesn't disappear \u2014
+  // but do it loudly. A silent switch made a correct custodial edit look like
+  // it broke Income on an unrelated month, because the dashboard kept
+  // showing numbers for the newly-switched month with no indication the
+  // view had changed at all.
   var dParts = date.split('-');
   if (dParts.length >= 2) {
-    STATE.currentYear = parseInt(dParts[0]);
-    STATE.currentMonth = parseInt(dParts[1]) - 1;
+    var newYear = parseInt(dParts[0]);
+    var newMonth = parseInt(dParts[1]) - 1;
+    var monthChanged = newYear !== STATE.currentYear || newMonth !== STATE.currentMonth;
+    STATE.currentYear = newYear;
+    STATE.currentMonth = newMonth;
     updateMonthLabel();
+    if (monthChanged) {
+      toast('Switched to ' + MONTHS[newMonth] + ' ' + newYear + ' to show this transaction.', 'ok');
+    }
   }
 
   save(); closeModal('transaction'); render();
@@ -1384,8 +1422,12 @@ function render() {
   var endingBalance = checkingBalance(priorTxns.concat(txns), 0);
   var carryNet = endingBalance - startingBalance;
 
-  // All-time Savings Balance: the actual cumulative pot, distinct from "contributed this month."
-  var savingsBal = allTimeSavingsBalance();
+  // Savings Balance as of the end of the currently viewed month \u2014 matches the
+  // real current total while viewing today's month, and shows the true historical
+  // balance while browsing a past month, same as Checking's Ending Balance does.
+  var savingsBal = savingsBalanceThroughViewedMonth();
+  var realToday = new Date();
+  var viewingCurrentMonth = STATE.currentMonth === realToday.getMonth() && STATE.currentYear === realToday.getFullYear();
 
   var startEl = document.getElementById('carry-start');
   if (startEl) {
@@ -1405,6 +1447,8 @@ function render() {
     var totalGoalTargetOv = STATE.goals.reduce(function(s,g){ return s+(g.target||0); }, 0);
     balEl.textContent = (savingsBal < 0 ? '\u2212' : '') + fmt(savingsBal) + (totalGoalTargetOv>0 ? ' / '+fmt(totalGoalTargetOv) : '');
     balEl.style.color = savingsBal < 0 ? 'var(--expense)' : 'var(--savings)';
+    var savedLblEl = document.getElementById('ov-saved-lbl');
+    if (savedLblEl) savedLblEl.textContent = viewingCurrentMonth ? 'Savings Balance' : 'Savings Balance \u2014 as of ' + MONTHS_SHORT[STATE.currentMonth] + ' ' + STATE.currentYear;
   }
 
   document.getElementById('ov-income').textContent   = fmt(income);
@@ -2121,8 +2165,11 @@ maybeShowOnboarding();
 function openCardDetail(type) {
   if (type === 'cw-hours' || type === 'cw-dist') { showPage('workhours'); return; }
   var c = STATE.config;
-  var mo = rangeForPreset('month');
-  var monthly = STATE.transactions.filter(function(t){ return t.date >= mo[0] && t.date <= mo[1]; });
+  // Use the currently VIEWED month (monthTxns), not the real wall-clock
+  // month \u2014 rangeForPreset('month') is always anchored to today, which
+  // meant this popup silently showed today's data even while browsing a
+  // past month via the month picker/arrows.
+  var monthly = monthTxns();
   var title, html;
 
   if (type === 'income') {
@@ -2181,9 +2228,12 @@ function openCardDetail(type) {
     html += '<div style="display:flex;flex-direction:column;gap:2px;margin-bottom:14px">';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Transferred to savings</span><strong style="color:var(--income)">+'+fmt(toSav)+'</strong></div>';
     html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Transferred from savings</span><strong style="color:var(--expense)">\u2212'+fmt(fromSav)+'</strong></div>';
-    var netAllTime = allTimeSavingsBalance();
+    var netAllTime = savingsBalanceThroughViewedMonth();
+    var realToday2 = new Date();
+    var viewingCurrent2 = STATE.currentMonth === realToday2.getMonth() && STATE.currentYear === realToday2.getFullYear();
+    var balLabel = viewingCurrent2 ? 'Savings Balance (all-time)' : 'Savings Balance (as of ' + MONTHS_SHORT[STATE.currentMonth] + ' ' + STATE.currentYear + ')';
     var totalGoalTarget = STATE.goals.reduce(function(s,g){ return s+(g.target||0); }, 0);
-    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>Savings Balance (all-time)</span><span style="color:'+(netAllTime<0?'var(--expense)':'var(--savings)')+'">'+(netAllTime<0?'\u2212':'')+fmt(netAllTime)+(totalGoalTarget>0?' / '+fmt(totalGoalTarget):'')+'</span></div></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:600"><span>'+balLabel+'</span><span style="color:'+(netAllTime<0?'var(--expense)':'var(--savings)')+'">'+(netAllTime<0?'\u2212':'')+fmt(netAllTime)+(totalGoalTarget>0?' / '+fmt(totalGoalTarget):'')+'</span></div></div>';
     if (!STATE.goals.length) { html += '<p style="color:var(--text3)">No savings goals yet. Add one from the Savings Goals page.</p>'; }
     else {
       STATE.goals.forEach(function(g){
@@ -2267,6 +2317,9 @@ window.Vestry = window.Vestry || {};
 Vestry.UI = {
   showPage: showPage,
   changeMonth: changeMonth,
+  openMonthJump: openMonthJump,
+  jumpToMonth: jumpToMonth,
+  jumpToToday: jumpToToday,
   updateMonthLabel: updateMonthLabel,
   toggleMobMenu: toggleMobMenu,
   toggleTheme: toggleTheme,
