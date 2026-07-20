@@ -43,7 +43,7 @@
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
   --font:      'DM Mono', monospace;
   --serif:     'Cormorant Garamond', Georgia, serif;
-  --version:   "v2.47";
+  --version:   "v2.50";
 }
 body.dark {
   --bg:        #0e0e0c;
@@ -1144,7 +1144,7 @@ td.amt.one { color: var(--oneoff); }
   <div class="logo">
     <span class="logo-name">Vestry</span>
     <span class="logo-family" id="logo-family-lbl"></span>
-    <span class="logo-ver">v2.47</span>
+    <span class="logo-ver">v2.50</span>
   </div>
 
   <div class="topbar-actions">
@@ -1388,8 +1388,12 @@ td.amt.one { color: var(--oneoff); }
   <div class="page" id="page-recurring">
     <div class="sec-hdr">
       <div class="sec-title">Recurring Bills <span class="sec-tag">monthly obligations</span></div>
-      <button class="btn btn-primary" onclick="openModal('recurring')">+ Add</button>
+      <div class="btn-row">
+        <button class="btn" id="rec-generate-btn" onclick="openGenerateRecurringModal()">📅 Generate This Month's Bills</button>
+        <button class="btn btn-primary" onclick="openModal('recurring')">+ Add</button>
+      </div>
     </div>
+    <div id="rec-generate-banner" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--text2)"></div>
     <div class="summary-row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);margin-bottom:18px">
       <div class="scard" style="--c:var(--expense)"><div class="scard-lbl">Monthly Fixed</div><div class="scard-val" id="rec-total" style="color:var(--expense)">$0</div></div>
       <div class="scard"><div class="scard-lbl">Daily avg</div><div class="scard-val" id="rec-daily" style="color:var(--text2)">$0</div></div>
@@ -1666,6 +1670,19 @@ td.amt.one { color: var(--oneoff); }
       </div>
     </div>
 
+    <div class="config-card collapsed" style="margin-bottom:22px">
+      <div class="config-card-header" onclick="toggleConfigCard(this)">
+        <h3>🗑 Trash</h3>
+        <span class="config-chevron">▾</span>
+      </div>
+      <div class="config-card-summary" id="trash-count">Empty</div>
+      <div class="config-card-body">
+        <p class="config-desc">Deleted transactions, bills, goals, work hours, mileage, expense log entries, and invoices land here instead of vanishing — restore anytime within 30 days, after which they're cleared automatically.</p>
+        <div id="trash-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+        <button class="btn" id="trash-empty-btn" style="border-color:var(--expense);color:var(--expense);display:none" onclick="clearTrash()">Empty Trash</button>
+      </div>
+    </div>
+
     <div class="config-card config-card-danger collapsed" style="margin-bottom:22px">
       <div class="config-card-header" onclick="toggleConfigCard(this)">
         <h3 style="color:var(--expense)">⚠ Danger Zone</h3>
@@ -1683,7 +1700,7 @@ td.amt.one { color: var(--oneoff); }
 
   </div>
 
-</div></div><div class="version-mark">Vestry v2.47</div>
+</div></div><div class="version-mark">Vestry v2.50</div>
 
 <div class="modal-bg" id="modal-transaction">
   <div class="modal">
@@ -1775,6 +1792,18 @@ td.amt.one { color: var(--oneoff); }
     <div class="btns">
       <button class="btn" onclick="closeModal('goal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-genrecurring">
+  <div class="modal" style="width:500px;max-width:100%">
+    <h2>Generate This Month's Bills</h2>
+    <p class="modal-sub">Creates an actual Expense transaction for each bill you check below, dated to its due day this month. Nothing is created silently — review and uncheck any you didn't actually pay, or already logged yourself.</p>
+    <div id="genrec-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;margin:14px 0"></div>
+    <div class="btns">
+      <button class="btn" onclick="closeModal('genrecurring')">Cancel</button>
+      <button class="btn btn-primary" id="genrec-confirm-btn" onclick="generateRecurringSelected()">Generate Selected</button>
     </div>
   </div>
 </div>
@@ -1960,6 +1989,13 @@ td.amt.one { color: var(--oneoff); }
       </div>
       <div id="merge-preview" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:11px;color:var(--text2);display:none">
         <div id="merge-preview-text"></div>
+      </div>
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400">
+          <input type="checkbox" id="merge-skip-dedup" style="width:16px;height:16px;margin:0" onchange="refreshMergePreview()">
+          Import everything, even rows that look like duplicates
+        </label>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">Duplicate detection matches on date + description + amount — two genuinely separate purchases with all three the same (e.g. two identical coffees same day) would otherwise get skipped.</div>
       </div>
     </div>
     <div class="btns">

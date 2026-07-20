@@ -9,7 +9,7 @@
    ============================================================ */
 
 // ── CONSTANTS ────────────────────────────────────────────────
-var APP_VERSION = 'v2.46';
+var APP_VERSION = 'v2.50';
 var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_SHORT = MONTHS.map(function(m){ return m.substr(0,3); });
 
@@ -22,6 +22,7 @@ var STATE = {
   mileage:      [],
   expenses:     [],
   invoices:     [],
+  trash:        [],
   config: {
     family:          '',
     person:          '',
@@ -56,18 +57,26 @@ var STATE = {
 var _mergeData = null;
 
 // ── CSV PARSER (Robust) ──────────────────────────────────────
+// RFC 4180-aware: a doubled quote ("") inside a quoted field is a literal
+// quote character, not a close-then-reopen. The previous version toggled
+// insideQuotes on every '"' with no lookahead, which silently mangled any
+// field like "Charge for ""Services""" \u2014 common in bank CSV exports that
+// quote descriptions containing quotes.
 function splitCSV(str) {
   var result = [];
   var insideQuotes = false;
   var currentWord = '';
   for (var i = 0; i < str.length; i++) {
     var char = str[i];
-    if (char === '"') { insideQuotes = !insideQuotes; }
+    if (char === '"') {
+      if (insideQuotes && str[i + 1] === '"') { currentWord += '"'; i++; }
+      else { insideQuotes = !insideQuotes; }
+    }
     else if (char === ',' && !insideQuotes) { result.push(currentWord.trim()); currentWord = ''; }
     else { currentWord += char; }
   }
   result.push(currentWord.trim());
-  return result.map(function(s) { return s.replace(/^"|"$/g, '').trim(); });
+  return result.map(function(s) { return s.trim(); });
 }
 
 
@@ -78,8 +87,27 @@ function esc(s) {
 
 
 // ── PERSIST ──────────────────────────────────────────────────
+// Set by save() when persistence fails, so callers (and the UI) can tell
+// the difference between "no changes yet" and "changes exist but couldn't
+// be written" \u2014 browsers cap localStorage around 5MB, and previously a
+// quota error here just vanished with no sign anything was wrong until
+// the next reload silently reverted to the last-saved copy.
+var lastSaveFailed = false;
 function save() {
-  try { localStorage.setItem('vestry_state', JSON.stringify(STATE)); } catch(e){}
+  try {
+    localStorage.setItem('vestry_state', JSON.stringify(STATE));
+    lastSaveFailed = false;
+  } catch(e) {
+    lastSaveFailed = true;
+    try {
+      if (typeof toast === 'function') {
+        var msg = (e && e.name === 'QuotaExceededError')
+          ? 'Storage is full \u2014 this change was NOT saved. Export a backup, then free up space (old invoices/expenses) or clear other site data.'
+          : 'Could not save \u2014 this change was NOT saved. ' + (e && e.message ? e.message : '');
+        toast(msg, 'error');
+      }
+    } catch(e2) {}
+  }
 }
 
 function load() {
@@ -94,6 +122,7 @@ function load() {
     STATE.mileage      = d.mileage      || [];
     STATE.expenses     = d.expenses     || [];
     STATE.invoices     = d.invoices     || [];
+    STATE.trash        = d.trash        || [];
     if (d.config) {
       Object.assign(STATE.config, d.config);
       if (!STATE.config.budgetGoals) STATE.config.budgetGoals = [];
@@ -125,6 +154,55 @@ function ensureFirstUseDate() {
   if (STATE.config.firstUseDate) return;
   var earliest = STATE.transactions.reduce(function(min,t){ return (!min || t.date < min) ? t.date : min; }, null);
   STATE.config.firstUseDate = earliest ? new Date(earliest + 'T00:00:00').getTime() : Date.now();
+  save();
+}
+
+// ── TRASH (v2.49) ──────────────────────────────────────────────────────────
+// Every delete routes through here instead of splicing an array directly, so
+// nothing is ever instantly, permanently gone \u2014 previously the FAQ had to
+// say "there is no undo," and the only recovery path was restoring an entire
+// backup file, wiping anything logged since. Entries carry the item's own
+// original data plus which array it belongs to, so restore is a straight
+// push-back. Auto-purged after 30 days so trash can't quietly bloat storage
+// forever (see the save() quota-failure fix \u2014 don't want to feed that).
+var TRASH_RETENTION_DAYS = 30;
+var TRASH_TYPE_TO_ARRAY = { transaction:'transactions', recurring:'recurring', goal:'goals', workHour:'workHours', mileage:'mileage', expense:'expenses', invoice:'invoices' };
+
+function moveToTrash(type, item, label) {
+  STATE.trash = STATE.trash || [];
+  STATE.trash.unshift({ trashId: Date.now() + Math.random(), type: type, data: item, deletedAt: Date.now(), label: label || '' });
+  if (STATE.trash.length > 500) STATE.trash = STATE.trash.slice(0, 500); // defensive cap
+}
+
+function purgeOldTrash() {
+  var cutoff = Date.now() - TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  var before = (STATE.trash || []).length;
+  STATE.trash = (STATE.trash || []).filter(function(t){ return t.deletedAt >= cutoff; });
+  if (STATE.trash.length !== before) save();
+}
+
+function restoreFromTrash(trashId) {
+  var idx = (STATE.trash || []).findIndex(function(t){ return t.trashId === trashId; });
+  if (idx === -1) return false;
+  var entry = STATE.trash[idx];
+  var arrName = TRASH_TYPE_TO_ARRAY[entry.type];
+  if (!arrName) return false;
+  STATE[arrName].push(entry.data);
+  if (entry.type === 'transaction') STATE.transactions.sort(function(a,b){ return b.date.localeCompare(a.date); });
+  STATE.trash.splice(idx, 1);
+  save();
+  return true;
+}
+
+function permanentlyDeleteFromTrash(trashId) {
+  var before = (STATE.trash || []).length;
+  STATE.trash = (STATE.trash || []).filter(function(t){ return t.trashId !== trashId; });
+  save();
+  return STATE.trash.length !== before;
+}
+
+function emptyTrash() {
+  STATE.trash = [];
   save();
 }
 
@@ -163,8 +241,14 @@ Vestry.State = {
   MONTHS: MONTHS,
   MONTHS_SHORT: MONTHS_SHORT,
   save: save,
+  get lastSaveFailed() { return lastSaveFailed; },
   load: load,
   ensureFirstUseDate: ensureFirstUseDate,
+  moveToTrash: moveToTrash,
+  purgeOldTrash: purgeOldTrash,
+  restoreFromTrash: restoreFromTrash,
+  permanentlyDeleteFromTrash: permanentlyDeleteFromTrash,
+  emptyTrash: emptyTrash,
   migrateTransaction: migrateTransaction,
   esc: esc,
   splitCSV: splitCSV

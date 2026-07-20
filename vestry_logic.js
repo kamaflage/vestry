@@ -162,6 +162,31 @@ function savingsByCategoryThroughViewedMonth() {
   return savingsByCategory(through);
 }
 
+// ── RECURRING BILL GENERATION (v2.49) ──────────────────────────────────────
+// Recurring Bills used to be a pure reference list \u2014 nothing ever got
+// logged automatically, so real spending only showed up if you remembered
+// to add it by hand. This finds bills not yet generated for the CURRENT
+// REAL month (tracked via each bill's own lastGeneratedYM, not the viewed
+// month \u2014 generation is about real life, not dashboard browsing context),
+// and flags which are actually due (day-of-month has arrived or passed) vs
+// not yet due, so the UI can default only the overdue ones to checked while
+// still letting the user opt into generating early.
+function recurringGenerationCandidates() {
+  var today = new Date();
+  var ym = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2,'0');
+  return (STATE.recurring || [])
+    .filter(function(r){ return r.lastGeneratedYM !== ym; })
+    .map(function(r){ return { bill: r, due: r.day <= today.getDate(), ym: ym }; });
+}
+// The actual due date for a bill this month, clamped to the real last day
+// of the month (e.g. day=31 in a 30-day month lands on the 30th).
+function recurringDueDateThisMonth(bill) {
+  var today = new Date();
+  var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  var day = Math.min(bill.day || 1, lastDay);
+  return dateStr(new Date(today.getFullYear(), today.getMonth(), day));
+}
+
 // Savings by Category: running (all-time) net balance per category, for
 // money that lives directly in the savings account (source: 'savings').
 // Lets a category double as a sub-account — e.g. logging a deposit as
@@ -333,6 +358,8 @@ Vestry.Logic = {
   allTimeSavingsBalance: allTimeSavingsBalance,
   savingsBalanceThroughViewedMonth: savingsBalanceThroughViewedMonth,
   savingsByCategoryThroughViewedMonth: savingsByCategoryThroughViewedMonth,
+  recurringGenerationCandidates: recurringGenerationCandidates,
+  recurringDueDateThisMonth: recurringDueDateThisMonth,
   savingsByCategory: savingsByCategory,
   filterTxns: filterTxns
 };

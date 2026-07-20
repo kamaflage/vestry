@@ -1,7 +1,7 @@
-// Vestry Service Worker v2.41
+// Vestry Service Worker v2.50
 // Caches the app shell for full offline use.
 
-const CACHE = 'vestry-v2.41';
+const CACHE = 'vestry-v2.50';
 
 const APP_SHELL = [
   './',
@@ -23,7 +23,7 @@ self.addEventListener('install', function(e) {
       return cache.addAll(APP_SHELL).catch(function(err) {
         // Font CDN may fail offline on first install — cache what we can
         console.warn('[Vestry SW] Some files not cached on install:', err);
-        return cache.addAll(['./index.html', './vestry_state.js', './vestry_logic.js', './vestry_ui.js', './manifest.json']);
+        return cache.addAll(['./index.html', './manifest.json']);
       });
     }).then(function() {
       console.log('[Vestry SW] Installed');
